@@ -2,7 +2,7 @@
 
 ## This repository contains all files involved in the creation of a Scheme self-interpreter for my Capstone project.
 
-## Progress
+### Progress
 
 15 August 2020:
 
