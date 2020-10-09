@@ -1,0 +1,17 @@
+opam-version: "2.0"
+version: "1.0"
+license: "MIT"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+
+install: [ make ]
+depends: [ ]
+
+description: "Capstone Project for Scheme Self-interpreter"
+
+tags: [
+  "category:Computer Science/Education/Interpreters"
+  "keyword:capstone"
+  "keyword:interpreters"
+]
