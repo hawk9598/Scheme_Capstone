@@ -31,13 +31,16 @@ type exp_val =
   |Boolean of bool
   |String of string
   |Character of char
-  |Pair of exp_val * exp_val
+  |Pair of exp_val * exp_val (* decide to make pairs immutable for now *)
   |Closure of (exp_val list -> exp_val)
-  |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *) 
+  |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
+  |Null (* empty list *) 
+  
 (* type quotation =
-    |Integer of int
-    |Bool of bool
-    |Str of string
-    |Char of char
-    |()
-    |Cmpd_Quotation of quotation * quotation *) 
+  |Int of int
+  |Boolean of bool
+  |String of string
+  |Character of char
+  |Null
+  |Pair of exp_val * exp_val (* but quoted pairs are NOT mutable *) 
+  |Cmpd_Quotation of quotation * quotation *)

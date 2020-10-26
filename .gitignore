@@ -1,6 +1,7 @@
 # Temporary save files
 
 *.ml~
+*.ml~~
 *.scm~
 
 # ocamlbuild working directory

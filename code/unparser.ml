@@ -69,7 +69,7 @@ let show_char c =
 
 assert (test_show_char show_char);;
 
-let test_show_exp_val candidate =
+let test_show_exp_val (candidate : exp_val -> string) =
   let b0 = (candidate (Int 5) = "5")
   and b1 = (candidate (Int (-5)) = "~-5")
   and b2 = (candidate (Boolean true) = "true")
@@ -101,7 +101,7 @@ let test_show_exp_val candidate =
     in b0 ; b1;; *)
 
 
-let rec show_exp_val v =
+let rec show_exp_val (v : exp_val): string  =
   (* show_exp_val : exp_val -> string *)
   begin
     match v with
@@ -119,7 +119,9 @@ let rec show_exp_val v =
       "Primitive function."
     |Closure _ ->
       "Closure function."
+    |Null ->
+      "[]"
   end;;
 
 assert (test_show_exp_val show_exp_val);;
-(*(test_show_exp_val_fail show_exp_val);; *)       
+(* (test_show_exp_val_fail show_exp_val);; *) 
