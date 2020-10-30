@@ -3,8 +3,10 @@ open Ast
 open Interpreter_essentials
 
 exception Not_implemented_yet
-exception Error of string
+                 
 (* Testing the environment and its pre-defined functions *)
+
+(* Testing for error: If the correct error is raised, test returns unit meaning that there is no exception raised. *)
        
 let prepopulated_env = [("test", Int 10);
                         ("var", String "var");
@@ -126,42 +128,42 @@ let test_extend_alist_star_error candidate =
                           [Int 5; Int 6; Int 9]
                           empty_alist);
                 failwith
-                  "Error not occurring" with Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 9]") -> ())
+                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 9]") -> ())
   and b1 = (try ignore (candidate
                           ["x"; "y"; "z"]
                           [Int 5; Character 'c']
                           empty_alist);
                 failwith
-                  "Error not occurring" with Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
+                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
   and b2 = (try ignore (candidate
                           ["x"; "y"]
                           [Int 5; Int 6; Int 7; Int 8]
                           empty_alist);
                 failwith
-                  "Error not occurring" with Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7; 8]") -> ())
+                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7; 8]") -> ())
   and b3 = (try ignore (candidate
                           ["x"; "y"; "z"; "var"]
                           [Int 5; Character 'c']
                           empty_alist);
                 failwith
-                  "Error not occurring" with Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"; \"var\"]  [5; 'c']") -> ())
+                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"; \"var\"]  [5; 'c']") -> ())
   and b4 = (try ignore (candidate
                           ["x"; "y"]
                           [Int 5; Int 6; Int 7]
                           prepopulated_env);
                 failwith
-                  "Error not occurring" with Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7]") -> ())
+                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7]") -> ())
   and b5 = (try ignore (candidate
                           ["x"; "y"; "z"]
                           [Int 5; Character 'c']
                           prepopulated_env);
                 failwith
-                  "Error not occurring" with Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
+                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
   in b0; b1; b2; b3; b4; b5;;
 
 
 assert (test_extend_alist_star extend_alist_star);; 
-(* (test_extend_alist_star_error extend_alist_star);; *)
+(test_extend_alist_star_error extend_alist_star);; 
 
 (* Testing the lookup function *)
 

@@ -2,8 +2,9 @@
 open Ast
 open Interpreter
 open Interpreter_essentials
+
+(* Testing for error: If the correct error is raised, test returns unit meaning that there is no exception raised. *)
    
-exception Error of string 
 exception Not_implemented_yet
 
 (* Testing the eval function *)
@@ -228,39 +229,39 @@ let test_eval_apply_error candidate =
                                     Char 'N')),
                                [Bool false; Integer 1; Char 'c']))
                           empty_alist);
-            failwith "Error not occurring" with Error ("Not a procedure: 'Y'") -> ())
+            failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 'Y'") -> ())
   and b1 = (try ignore (candidate (Apply
                                      ((If (Bool false,
                                            Char 'Y',
                                            Char 'N')),
                                       [Bool false; Integer 1; Char 'c']))
                           empty_alist);
-                failwith "Error not occurring" with Error ("Not a procedure: 'N'") -> ())
+                failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 'N'") -> ())
   and b2 = (try ignore (candidate (Apply
                                      (Str "hello world",
                                       [Bool false; Integer 1; Char 'c']))
                           empty_alist);
-                failwith "Error not occurring" with Error ("Not a procedure: \"hello world\"") -> ())
+                failwith "Error not occurring" with Interpreter.Error ("Not a procedure: \"hello world\"") -> ())
   and b3 = (try ignore (candidate (Apply
                                      (Char 'c',
                                       [Bool false; Integer 1; Char 'c']))
                           empty_alist);
-                failwith "Error not occurring" with Error ("Not a procedure: 'c'") -> ())
+                failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 'c'") -> ())
   and b4 = (try ignore (candidate (Apply
                                      (Bool true,
                                       [Bool false; Integer 1; Char 'c']))
                           empty_alist);
-                failwith "Error not occurring" with Error ("Not a procedure: true") -> ())
+                failwith "Error not occurring" with Interpreter.Error ("Not a procedure: true") -> ())
   and b5 = (try ignore (candidate (Apply
                                      (Var "test",
                                       [Bool false; Integer 1; Char 'c']))
                           [("test", Int 10)]);
-                failwith "Error not occurring" with Error ("Not a procedure: 10") -> ())
+                failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 10") -> ())
   and b6 = (try ignore (candidate (Apply
                                      (Integer 5,
                                       [Bool false; Integer 1; Char 'c']))
                           empty_alist);
-                failwith "Error not occurring" with Error ("Not a procedure: 5") -> ())
+                failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 5") -> ())
   in b0; b1; b2; b3; b4; b5; b6;;
             
 assert (test_eval_integer eval);;
@@ -275,4 +276,4 @@ assert (test_eval_var eval);;
 (test_eval_var_error eval);; 
 assert (test_eval_if eval);;
 assert (test_eval_apply eval);;
-(* (test_eval_apply_error eval);; *)
+(test_eval_apply_error eval);;
