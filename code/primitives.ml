@@ -494,13 +494,22 @@ let internal_exponentiation =
             begin
               match v2 with
               |Int i2 ->
-                let rec power x n a =
-                  if n == 0
-                  then Int a
-                  else
-                    let n' = n - 1 in
-                    power x n' (x * a)
-                in power i1 i2 1
+                if i2 > 0 then
+                  let rec power x n a =
+                    if n == 0
+                    then Int a
+                    else
+                      let n' = n - 1 in
+                      power x n' (x * a)
+                  in power i1 i2 1
+                else
+                  let rec power x n a =
+                    if n == 0
+                    then Int (1/a)
+                    else
+                      let n' = n - 1 in
+                      power x n' (x * a)
+                  in power i1 (-i2) 1
               |_ ->
                 raise (Error
                          (Printf.sprintf
@@ -833,7 +842,7 @@ let internal_char_equal =
                     match v with
                     |Character c ->
                       if c = c'
-                      then visit_char_equal vs' c' a
+                      then visit_char_equal vs' c a
                       else
                         Boolean false
                     |_ ->
@@ -886,7 +895,7 @@ let internal_char_gt =
                     match v with
                     |Character c ->
                       if c < c'
-                      then visit_char_gt vs' c' a
+                      then visit_char_gt vs' c a
                       else
                         Boolean false
                     |_ ->
@@ -939,7 +948,7 @@ let internal_char_ge =
                     match v with
                     |Character c ->
                       if c <= c'
-                      then visit_char_ge vs' c' a
+                      then visit_char_ge vs' c a
                       else
                         Boolean false
                     |_ ->
@@ -993,7 +1002,7 @@ let internal_char_lt =
                     match v with
                     |Character c ->
                       if c > c'
-                      then visit_char_lt vs' c' a
+                      then visit_char_lt vs' c a
                       else
                         Boolean false
                     |_ ->
@@ -1047,7 +1056,7 @@ let internal_char_le =
                     match v with
                     |Character c ->
                       if c >= c'
-                      then visit_char_le vs' c' a
+                      then visit_char_le vs' c a
                       else
                         Boolean false
                     |_ ->
@@ -1183,7 +1192,7 @@ let internal_str_equal =
                     match v with
                     |String s ->
                       if s = s'
-                      then visit_str_equal vs' s' a
+                      then visit_str_equal vs' s a
                       else
                         Boolean false
                     |_ ->
@@ -1236,7 +1245,7 @@ let internal_str_gt =
                     match v with
                     |String s ->
                       if s < s'
-                      then visit_str_gt vs' s' a
+                      then visit_str_gt vs' s a
                       else
                         Boolean false
                     |_ ->
@@ -1289,7 +1298,7 @@ let internal_str_ge =
                     match v with
                     |String s ->
                       if s <= s'
-                      then visit_str_ge vs' s' a
+                      then visit_str_ge vs' s a
                       else
                         Boolean false
                     |_ ->
@@ -1342,7 +1351,7 @@ let internal_str_lt =
                     match v with
                     |String s ->
                       if s > s'
-                      then visit_str_lt vs' s' a
+                      then visit_str_lt vs' s a
                       else
                         Boolean false
                     |_ ->
@@ -1396,7 +1405,7 @@ let internal_str_le =
                     match v with
                     |String s ->
                       if s >= s'
-                      then visit_str_le vs' s' a
+                      then visit_str_le vs' s a
                       else
                         Boolean false
                     |_ ->
@@ -1467,7 +1476,7 @@ let internal_char_to_str =
         in String (String.concat "" (make_str_from_chars vs))
     end)
 
-let internal_str_ref =
+(* let internal_str_ref =
   (fun vs ->
     begin
       match vs with
@@ -1505,13 +1514,9 @@ let internal_str_ref =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-    end)
-
-     (* Define internal_cons or internal functions as a function directly, then rename primitive_internal_cons as Primitive internal_cons. This is for more direct testing. *)
+    end) *)
 
      (* Strings can be assumed to be immutable for the interpreter *)
-     
-     (* Implement tests for primitive functions in another file, using dune *)
 
      (* What other things do I need to do, i.e. do I test my eval function on more complicated programs involving the native primitives? *)
 
