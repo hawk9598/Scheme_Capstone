@@ -124,7 +124,7 @@ let internal_cdr =
           |_ ->
             raise (Error
                      (Printf.sprintf
-                        "Error in car: %s is not a pair."
+                        "Error in cdr: %s is not a pair."
                         (show_exp_val v)))
         end
 
@@ -1515,6 +1515,8 @@ let internal_char_to_str =
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
     end) *)
+
+    (* Change error message such that the calling function name is also present *)
 
      (* Strings can be assumed to be immutable for the interpreter *)
 

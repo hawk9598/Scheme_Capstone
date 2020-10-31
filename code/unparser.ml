@@ -116,9 +116,9 @@ let rec show_exp_val (v : exp_val): string  =
     |Pair (v1, v2) ->
       "(" ^ (show_exp_val v1) ^ " , " ^ (show_exp_val v2) ^ ")"
     |Primitive _->
-      "Primitive function."
+      "Primitive function"
     |Closure _ ->
-      "Closure function."
+      "Closure function"
     |Null ->
       "[]"
   end;;
