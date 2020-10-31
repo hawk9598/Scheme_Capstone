@@ -1,5 +1,19 @@
 open Ast
 
+exception Error of string   
+
+let identity =
+  fun vs ->
+  (begin
+      match vs with
+      |v :: [] -> v
+      |_ ->
+        raise
+          (Error
+             (Printf.sprintf
+                "Incorrect argument count in call to identity"))
+    end)
+   
 let show_list show_yourself vs =
   match vs with
   | [] ->
@@ -85,20 +99,15 @@ let test_show_exp_val (candidate : exp_val -> string) =
   and b12 = (candidate (Pair (Character 'n', Character 'a')) = "('n' , 'a')")
   and b13 = (candidate (Pair (Pair (Int 6, Int 9), Pair(Boolean true, Boolean false))) = "((6 , 9) , (true , false))")
   and b14 = (candidate (Pair (Character 'c', Pair (String "hello", String "world"))) = "('c' , (\"hello\" , \"world\"))")
-  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14;;
-
-(*  let test_show_exp_val_fail candidate =
-    let b0 = (try ignore (candidate (Closure (fun vs -> begin
-                                                  match vs with
-                                                  |[] ->
-                                                    Boolean false
-                                                  |v :: vs'->
-                                                    v
-                                                end)));
-                  failwith "bad show_exp_val" with Error "Unable to show functions."-> ())
-    and b1 = (try ignore (candidate (Primitive (fun v -> v)));
-                  failwith "bad show_exp_val" with Error "Unable to show functions."-> ())
-    in b0 ; b1;; *)
+  and b15 = (candidate (Pair (Primitive identity,
+                              Primitive identity)) = "(Primitive function , Primitive function)")
+  and b16 = (candidate (Pair (Closure identity,
+                              Closure identity)) = "(Closure function , Closure function)")
+  and b17 = (candidate (Pair(Null, Null)) = "([] , [])")
+  and b18 = (candidate (Primitive identity) = "Primitive function")
+  and b19 = (candidate (Closure identity) = "Closure function")
+  and b20 = (candidate Null = "[]")
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20;;
 
 
 let rec show_exp_val (v : exp_val): string  =
@@ -124,4 +133,3 @@ let rec show_exp_val (v : exp_val): string  =
   end;;
 
 assert (test_show_exp_val show_exp_val);;
-(* (test_show_exp_val_fail show_exp_val);; *) 
