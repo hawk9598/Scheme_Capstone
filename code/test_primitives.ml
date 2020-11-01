@@ -457,10 +457,35 @@ let test_internal_add candidate =
   and b12 = (candidate [Int 1000;Int (-200);Int (-145);Int (-5);Int 200] = Int 850)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12;;
 
-(* let test_internal_add_error candidate *)
-
+let test_internal_add_error candidate =
+  let b0 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in +: true is not a number.") -> ())
+  and b1 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in +: \"hello\" is not a number.") -> ())
+  and b2 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in +: '0' is not a number.") -> ())
+  and b3 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in +: (1 , 5) is not a number.") -> ())
+  and b4 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in +: Closure function is not a number.") -> ())
+  and b5 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in +: Primitive function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in +: [] is not a number.") -> ())
+  and b7 = (try ignore (candidate [Int 5; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in +: true is not a number.") -> ())
+  and b8 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in +: \"hello\" is not a number.") -> ())
+  and b9 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in +: '0' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 1; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in +: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 assert(test_internal_add internal_add);;
-(* test_internal_add_error internal_add;*)
+test_internal_add_error internal_add;;
 
 let test_internal_sub candidate =
   (* Test for only positive integers *)
@@ -484,10 +509,42 @@ let test_internal_sub candidate =
   and b11 = (candidate [Int 1000;Int (-200);Int (-145);Int (-5);Int 200] = Int 1150)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11;;
 
-(* let test_internal_sub_error candidate *)
-
+let test_internal_sub_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of input argument for single argument *)
+  and b1 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in -: true is not a number.") -> ())
+  and b2 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in -: \"hello\" is not a number.") -> ())
+  and b3 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in -: '0' is not a number.") -> ())
+  and b4 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in -: (1 , 5) is not a number.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in -: Closure function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in -: Primitive function is not a number.") -> ())
+  and b7 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in -: [] is not a number.") -> ())
+  (* test for incorrect type of input argument for multiple arguments *)
+  and b8 = (try ignore (candidate [Boolean true; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in -: true is not a number.") -> ())
+  and b9 = (try ignore (candidate [Character '9'; Int 2; Int (-3)]);
+                failwith "Error not raised" with Primitives.Error("Error in -: '9' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in -: \"hello\" is not a number.") -> ())
+  and b11 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in -: '0' is not a number.") -> ())
+  and b12 = (try ignore (candidate [Int 5; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in -: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12;;
 assert(test_internal_sub internal_sub);;
-(* test_internal_sub_error internal_sub;*)
+test_internal_sub_error internal_sub;;
 
 let test_internal_mul candidate =
   (* Test base case and only for positive integers *)
@@ -512,10 +569,36 @@ let test_internal_mul candidate =
   and b12 = (candidate [Int 100;Int (-2);Int (-14);Int (-5);Int 2] = Int (-28000))
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12;;
 
-(* let test_internal_mul_error candidate *)
+let test_internal_mul_error candidate =
+  let b0 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in *: true is not a number.") -> ())
+  and b1 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in *: \"hello\" is not a number.") -> ())
+  and b2 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in *: '0' is not a number.") -> ())
+  and b3 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in *: (1 , 5) is not a number.") -> ())
+  and b4 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in *: Closure function is not a number.") -> ())
+  and b5 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in *: Primitive function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in *: [] is not a number.") -> ())
+  and b7 = (try ignore (candidate [Int 5; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in *: true is not a number.") -> ())
+  and b8 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in *: \"hello\" is not a number.") -> ())
+  and b9 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in *: '0' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 1; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in *: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_mul internal_mul);;
-(* test_internal_mul_error internal_mul;*)
+test_internal_mul_error internal_mul;;
 
 let test_internal_div candidate =
   (* Test for the case where there is only 1 integer *)
@@ -541,12 +624,53 @@ let test_internal_div candidate =
   and b16 = (candidate [Int 120; Int (-5)] = Int (-24))
   and b17 = (candidate [Int 960; Int (-24); Int 4] = Int (-10))
   and b18 = (candidate [Int 107; Int (-2); Int 3] = Int (-107/6))
-  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18;;
+  (* Test for the case where the first argument is 0 *)
+  and b19 = (candidate [Int 0; Int 100; Int 100000] = Int 0)
+  and b20 = (candidate [Int 0; Int (-100); Int (-100000)] = Int 0) 
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20;;
 
-(* let test_internal_div_error candidate *)
+let test_internal_div_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of input argument for single argument *)
+  and b1 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in /: true is not a number.") -> ())
+  and b2 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in /: \"hello\" is not a number.") -> ())
+  and b3 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in /: '0' is not a number.") -> ())
+  and b4 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in /: (1 , 5) is not a number.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in /: Closure function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in /: Primitive function is not a number.") -> ())
+  and b7 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in /: [] is not a number.") -> ())
+  (* test for incorrect type of input argument for multiple arguments *)
+  and b8 = (try ignore (candidate [Boolean true; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in /: true is not a number.") -> ())
+  and b9 = (try ignore (candidate [Character '9'; Int 2; Int (-3)]);
+                failwith "Error not raised" with Primitives.Error("Error in /: '9' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 10; Int 1; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in /: \"hello\" is not a number.") -> ())
+  and b11 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in /: '0' is not a number.") -> ())
+  and b12 = (try ignore (candidate [Int 5; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in /: (1 , 5) is not a number.") -> ())
+  (* test for when a number is being divided by 0 *)
+  and b13 = (try ignore (candidate [Int 100; Int 20; Int 0; Int 5]);
+                 failwith "Error not raised" with Primitives.Error("Error in /: undefined for 0.") -> ())
+  and b14 = (try ignore (candidate [Int (-100); Int 0; Int 10; Int 5]);
+                 failwith "Error not raised" with Primitives.Error("Error in /: undefined for 0.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12; b13; b14;;
 
 assert(test_internal_div internal_div);;
-(* test_internal_div_error internal_div;*)
+test_internal_div_error internal_div;;
 
 let test_internal_quotient candidate =
   (* Test for case of positive integers with no remainder *)
@@ -568,12 +692,50 @@ let test_internal_quotient candidate =
   and b12 = (candidate [Int (-25); Int (-4)] = Int (25/4))
   and b13 = (candidate [Int 10; Int (-3)] = Int (-10/3))
   and b14 = (candidate [Int (-25); Int 4] = Int (-25/4))
-  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14;;
+  (* Test for case where first argument is 0 *)
+  and b15 = (candidate [Int 0; Int 100] = Int 0)
+  and b16 = (candidate [Int 0; Int (-100)] = Int 0)
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16;;
 
-(* let test_internal_quotient_error candidate *)
+let test_internal_quotient_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5]") -> ())
+  and b2 = (try ignore (candidate [Int 5; Int (-3); Int 100]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; 100]") -> ())
+  and b3 = (try ignore (candidate [Int 5; Int (-3); Int 100; Int (-500)]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; 100; ~-500]") -> ())
+  and b4 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [[]]") -> ())
+  and b5 = (try ignore (candidate [Boolean true; Int (-3); Int 100]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [true; ~-3; 100]") -> ())
+  and b6 = (try ignore (candidate [Int 5; Int (-3); Character '8'; Int (-500)]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; '8'; ~-500]") -> ())
+  (* test for incorrect type of arguments *)
+  and b7 = (try ignore (candidate [String "hello"; Int 10]);
+                failwith "Error not raised" with Primitives.Error("Error in quotient: \"hello\" is not a number.") -> ())
+  and b8 = (try ignore (candidate [Character '5'; Int 10]);
+                failwith "Error not raised" with Primitives.Error("Error in quotient: '5' is not a number.") -> ())
+  and b9 = (try ignore (candidate [Int (-100); Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in quotient: false is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 100; Pair(Int 10,
+                                                  Int 10)]);
+                 failwith "Error not raised" with Primitives.Error("Error in quotient: (10 , 10) is not a number.") -> ())
+  and b11 = (try ignore (candidate [Closure identity; Primitive internal_div]);
+                 failwith "Error not raised" with Primitives.Error("Error in quotient: Closure function is not a number.") -> ())
+  and b12 = (try ignore (candidate [Character 'c'; String "quotient"]);
+                 failwith "Error not raised" with Primitives.Error("Error in quotient: 'c' is not a number.") -> ())
+  (* test for division by 0 *)
+  and b13 = (try ignore (candidate [Int 100; Int 0]);
+                 failwith "Error not raised" with Primitives.Error("Error in quotient: undefined for 0.") -> ())
+  and b14 = (try ignore (candidate [Int (-100); Int 0]);
+                 failwith "Error not raised" with Primitives.Error("Error in quotient: undefined for 0.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12; b13; b14;;
 
 assert(test_internal_quotient internal_quotient);;
-(* test_internal_quotient_error internal_quotient;*)
+test_internal_quotient_error internal_quotient;;
 
 let test_internal_remainder candidate =
   (* Testing for positive integers only with remainder *)
@@ -603,12 +765,50 @@ let test_internal_remainder candidate =
   and b18 = (candidate [Int 10; Int (-5)] = Int 0)
   and b19 = (candidate [Int (-24); Int 6] = Int 0)
   and b20 = (candidate [Int 4096; Int (-16)] = Int 0)
-  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20;;
+  (* Test for case where first argument is 0 *)
+  and b21 = (candidate [Int 0; Int 1000] = Int 0)
+  and b22 = (candidate [Int 0; Int (-1000)] = Int 0)
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20 && b21 && b22;;
 
-(* let test_internal_remainder_error candidate *)
+let test_internal_remainder_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5]") -> ())
+  and b2 = (try ignore (candidate [Int 5; Int (-3); Int 100]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; 100]") -> ())
+  and b3 = (try ignore (candidate [Int 5; Int (-3); Int 100; Int (-500)]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; 100; ~-500]") -> ())
+  and b4 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [[]]") -> ())
+  and b5 = (try ignore (candidate [Boolean true; Int (-3); Int 100]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [true; ~-3; 100]") -> ())
+  and b6 = (try ignore (candidate [Int 5; Int (-3); Character '8'; Int (-500)]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; '8'; ~-500]") -> ())
+  (* test for incorrect type of arguments *)
+  and b7 = (try ignore (candidate [String "hello"; Int 10]);
+                failwith "Error not raised" with Primitives.Error("Error in remainder: \"hello\" is not a number.") -> ())
+  and b8 = (try ignore (candidate [Character '5'; Int 10]);
+                failwith "Error not raised" with Primitives.Error("Error in remainder: '5' is not a number.") -> ())
+  and b9 = (try ignore (candidate [Int (-100); Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in remainder: false is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 100; Pair(Int 10,
+                                                  Int 10)]);
+                 failwith "Error not raised" with Primitives.Error("Error in remainder: (10 , 10) is not a number.") -> ())
+  and b11 = (try ignore (candidate [Closure identity; Primitive internal_div]);
+                 failwith "Error not raised" with Primitives.Error("Error in remainder: Closure function is not a number.") -> ())
+  and b12 = (try ignore (candidate [Character 'c'; String "quotient"]);
+                 failwith "Error not raised" with Primitives.Error("Error in remainder: 'c' is not a number.") -> ())
+  (* test for division by 0 *)
+  and b13 = (try ignore (candidate [Int 100; Int 0]);
+                 failwith "Error not raised" with Primitives.Error("Error in remainder: undefined for 0.") -> ())
+  and b14 = (try ignore (candidate [Int (-100); Int 0]);
+                 failwith "Error not raised" with Primitives.Error("Error in remainder: undefined for 0.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12; b13; b14;;
 
 assert(test_internal_remainder internal_remainder);;
-(* test_internal_remainder_error internal_remainder;*)
+test_internal_remainder_error internal_remainder;;
 
 let test_internal_exponentiation candidate =
   (* When both index is 0 for base case *)
@@ -638,10 +838,40 @@ let test_internal_exponentiation candidate =
   and b19 = (candidate [Int (-3); Int (-12)] = Int (1/531441))
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19;;
 
-(* let test_internal_exponentiation_error candidate *)
+let test_internal_exponentiation_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5]") -> ())
+  and b2 = (try ignore (candidate [Int 5; Int (-3); Int 100]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; 100]") -> ())
+  and b3 = (try ignore (candidate [Int 5; Int (-3); Int 100; Int (-500)]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; 100; ~-500]") -> ())
+  and b4 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [[]]") -> ())
+  and b5 = (try ignore (candidate [Boolean true; Int (-3); Int 100]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [true; ~-3; 100]") -> ())
+  and b6 = (try ignore (candidate [Int 5; Int (-3); Character '8'; Int (-500)]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; ~-3; '8'; ~-500]") -> ())
+  (* test for incorrect type of arguments *)
+  and b7 = (try ignore (candidate [String "hello"; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in expt: \"hello\" is not a number.") -> ())
+  and b8 = (try ignore (candidate [Character '0'; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in expt: '0' is not a number.") -> ())
+  and b9 = (try ignore (candidate [Int (-100); Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in expt: false is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 100; Pair(Int 10,
+                                                  Int 10)]);
+                 failwith "Error not raised" with Primitives.Error("Error in expt: (10 , 10) is not a number.") -> ())
+  and b11 = (try ignore (candidate [Closure identity; Primitive internal_div]);
+                 failwith "Error not raised" with Primitives.Error("Error in expt: Closure function is not a number.") -> ())
+  and b12 = (try ignore (candidate [Character 'c'; String "quotient"]);
+                 failwith "Error not raised" with Primitives.Error("Error in expt: 'c' is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12;;
 
 assert(test_internal_exponentiation internal_exponentiation);;
-(* test_internal_exponentiation_error internal_exponentiation;*)
+test_internal_exponentiation_error internal_exponentiation;;
 
 let test_internal_lt candidate =
   (* Test for one element only *)
@@ -665,10 +895,43 @@ let test_internal_lt candidate =
   and b14 = (candidate [Int (-5); Int (-2); Int 5; Int 5] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14;;
 
-(* let test_internal_lt_error candidate *)
-
+let test_internal_lt_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of argument for single argument case *)
+  and b1 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in <: true is not a number.") -> ())
+  and b2 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in <: \"hello\" is not a number.") -> ())
+  and b3 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in <: '0' is not a number.") -> ())
+  and b4 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in <: (1 , 5) is not a number.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in <: Closure function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in <: Primitive function is not a number.") -> ())
+  and b7 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in <: [] is not a number.") -> ())
+  (* test for incorrect type of input argument for multiple arguments *)
+  and b8 = (try ignore (candidate [Boolean true; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in <: true is not a number.") -> ())
+  and b9 = (try ignore (candidate [Character '9'; Int 2; Int (-3)]);
+                failwith "Error not raised" with Primitives.Error("Error in <: '9' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in <: \"hello\" is not a number.") -> ())
+  and b11 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in <: '0' is not a number.") -> ())
+  and b12 = (try ignore (candidate [Int 5; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in <: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12;;
+             
 assert(test_internal_lt internal_lt);;
-(* test_internal_lt_error internal_lt;*)
+test_internal_lt_error internal_lt;; 
 
 let test_internal_lte candidate =
   (* Test for one element only *)
@@ -692,10 +955,43 @@ let test_internal_lte candidate =
   and b14 = (candidate [Int (-5); Int (-2); Int 3; Int 5; Int 5] = Boolean true)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14;;
 
-(* let test_internal_lte_error candidate *)
+let test_internal_lte_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of argument for single argument case *)
+  and b1 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: true is not a number.") -> ())
+  and b2 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: \"hello\" is not a number.") -> ())
+  and b3 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in <=: '0' is not a number.") -> ())
+  and b4 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: (1 , 5) is not a number.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: Closure function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: Primitive function is not a number.") -> ())
+  and b7 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: [] is not a number.") -> ())
+  (* test for incorrect type of input argument for multiple arguments *)
+  and b8 = (try ignore (candidate [Boolean true; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: true is not a number.") -> ())
+  and b9 = (try ignore (candidate [Character '9'; Int 2; Int (-3)]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: '9' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in <=: \"hello\" is not a number.") -> ())
+  and b11 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in <=: '0' is not a number.") -> ())
+  and b12 = (try ignore (candidate [Int 5; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in <=: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12;;
 
 assert(test_internal_lte internal_lte);;
-(* test_internal_lte_error internal_lte;*)
+test_internal_lte_error internal_lte;;
 
 let test_internal_gt candidate =
   (* Test for one element only *)
@@ -719,10 +1015,43 @@ let test_internal_gt candidate =
   and b14 = (candidate [Int 10; Int 5; Int (-5); Int (-10)] = Boolean true)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14;;
 
-(* let test_internal_gt_error candidate *)
+let test_internal_gt_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of argument for single argument case *)
+  and b1 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in >: true is not a number.") -> ())
+  and b2 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in >: \"hello\" is not a number.") -> ())
+  and b3 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in >: '0' is not a number.") -> ())
+  and b4 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in >: (1 , 5) is not a number.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in >: Closure function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in >: Primitive function is not a number.") -> ())
+  and b7 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in >: [] is not a number.") -> ())
+  (* test for incorrect type of input argument for multiple arguments *)
+  and b8 = (try ignore (candidate [Boolean true; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in >: true is not a number.") -> ())
+  and b9 = (try ignore (candidate [Character '9'; Int 2; Int (-3)]);
+                failwith "Error not raised" with Primitives.Error("Error in >: '9' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in >: \"hello\" is not a number.") -> ())
+  and b11 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in >: '0' is not a number.") -> ())
+  and b12 = (try ignore (candidate [Int 5; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in >: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12;;
 
 assert(test_internal_gt internal_gt);;
-(* test_internal_gt_error internal_gt;*)
+test_internal_gt_error internal_gt;;
 
 let test_internal_gte candidate =
   (* Test for one element only *)
@@ -746,10 +1075,43 @@ let test_internal_gte candidate =
   and b14 = (candidate [Int 10; Int 5; Int (-5); Int (-10)] = Boolean true)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14;;
 
-(* let test_internal_gte_error candidate *)
+let test_internal_gte_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of argument for single argument case *)
+  and b1 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: true is not a number.") -> ())
+  and b2 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: \"hello\" is not a number.") -> ())
+  and b3 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in >=: '0' is not a number.") -> ())
+  and b4 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: (1 , 5) is not a number.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: Closure function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: Primitive function is not a number.") -> ())
+  and b7 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: [] is not a number.") -> ())
+  (* test for incorrect type of input argument for multiple arguments *)
+  and b8 = (try ignore (candidate [Boolean true; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: true is not a number.") -> ())
+  and b9 = (try ignore (candidate [Character '9'; Int 2; Int (-3)]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: '9' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in >=: \"hello\" is not a number.") -> ())
+  and b11 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in >=: '0' is not a number.") -> ())
+  and b12 = (try ignore (candidate [Int 5; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in >=: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12;;
 
 assert(test_internal_gte internal_gte);;
-(* test_internal_gte_error internal_gte;*)
+test_internal_gte_error internal_gte;;
 
 let test_internal_equal candidate =
   (* Test for only one element *)
@@ -768,10 +1130,43 @@ let test_internal_equal candidate =
   and b10 = (candidate [Int (-100); Int (-10); Int (-1); Int (-100)] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10;;
 
-(* let test_internal_equal_error candidate *)
+let test_internal_equal_error candidate =
+  (* test for incorrect number of arguments first *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of argument for single argument case *)
+  and b1 = (try ignore (candidate [Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in =: true is not a number.") -> ())
+  and b2 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in =: \"hello\" is not a number.") -> ())
+  and b3 = (try ignore (candidate [Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in =: '0' is not a number.") -> ())
+  and b4 = (try ignore (candidate [Pair (Int 1,
+                                         Int 5)]);
+                failwith "Error not raised" with Primitives.Error("Error in =: (1 , 5) is not a number.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in =: Closure function is not a number.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_add]);
+                failwith "Error not raised" with Primitives.Error("Error in =: Primitive function is not a number.") -> ())
+  and b7 = (try ignore (candidate [Null]);
+                failwith "Error not raised" with Primitives.Error("Error in =: [] is not a number.") -> ())
+  (* test for incorrect type of input argument for multiple arguments *)
+  and b8 = (try ignore (candidate [Boolean true; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in =: true is not a number.") -> ())
+  and b9 = (try ignore (candidate [Character '9'; Int 2; Int (-3)]);
+                failwith "Error not raised" with Primitives.Error("Error in =: '9' is not a number.") -> ())
+  and b10 = (try ignore (candidate [Int 10; Int 0; String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in =: \"hello\" is not a number.") -> ())
+  and b11 = (try ignore (candidate [Int 1; Int (-2); Int 3; Character '0']);
+                failwith "Error not raised" with Primitives.Error("Error in =: '0' is not a number.") -> ())
+  and b12 = (try ignore (candidate [Int 5; Int 1; Int 1; Int 1; Int 1;
+                                    Pair (Int 1,
+                                          Int 5)]);
+                 failwith "Error not raised" with Primitives.Error("Error in =: (1 , 5) is not a number.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12;;
 
 assert(test_internal_equal internal_equal);;
-(* test_internal_equal_error internal_equal;*)
+test_internal_equal_error internal_equal;;
 
 let test_internal_is_char candidate =
   let b0 = (candidate [Character 'c'] = Boolean true)
@@ -789,10 +1184,24 @@ let test_internal_is_char candidate =
                               Character 'b')] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11;;
 
-(* let test_internal_is_char_error candidate *)
+let test_internal_is_char_error candidate =
+  let b0 = (try ignore (candidate [Pair(Character 'c', Int 3);
+                                   Pair(Boolean true, Character '9')]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [('c' , 3); (true , '9')]") -> ())
+  and b1 = (try ignore (candidate [Character '1'; Character 'a'; Character '/';
+                                   Character '-'; Character '+']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['1'; 'a'; '/'; '-'; '+']") -> ())
+  and b2 = (try ignore (candidate [Boolean true; Int 5; Character 's';
+                                   String "hi"; Null]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [true; 5; 's'; \"hi\"; []]") -> ())
+  and b3 = (try ignore (candidate [Character '1'; Character 'a']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['1'; 'a']") -> ())
+  and b4 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  in b0; b1; b2; b3; b4;;
 
 assert(test_internal_is_char internal_is_char);;
-(* test_internal_is_char_error internal_is_char;*)
+test_internal_is_char_error internal_is_char;;
 
 let test_internal_char_equal candidate =
   (* Test for single argument case *)
@@ -808,10 +1217,38 @@ let test_internal_char_equal candidate =
   and b8 = (candidate [Character 'M'; Character 'N'; Character 'N'] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8;;
 
-(* let test_internal_char_equal_error candidate *)
+let test_internal_char_equal_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: 5 is not a character.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: false is not a character.") -> ())
+  and b3 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: \"hello\" is not a character.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: ('c' , '1') is not a character.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: Closure function is not a character.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: Primitive function is not a character.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [Character 'c'; Character 'b'; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: true is not a character.") -> ())
+  and b8 = (try ignore (candidate [Character 'c'; Character 'c'; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: [] is not a character.") -> ())
+  and b9 = (try ignore (candidate [Int 5; Character 'c'; Character 'b']);
+                failwith "Error not raised" with Primitives.Error("Error in char=?: 5 is not a character.") -> ())
+  and b10 = (try ignore (candidate [String "interpreter"; Character 'c';
+                                    Character 'c']);
+                 failwith "Error not raised" with Primitives.Error("Error in char=?: \"interpreter\" is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_char_equal internal_char_equal);;
-(* test_internal_char_equal_error internal_char_equal;*)
+test_internal_char_equal_error internal_char_equal;;
 
 let test_internal_char_gt candidate =
   (* Test for single argument case *)
@@ -843,10 +1280,38 @@ let test_internal_char_gt candidate =
                         Character '3'; Character '0'] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13;;
                                                            
-(* let test_internal_char_gt_error candidate *)
+let test_internal_char_gt_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: 5 is not a character.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: false is not a character.") -> ())
+  and b3 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: \"hello\" is not a character.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: ('c' , '1') is not a character.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: Closure function is not a character.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: Primitive function is not a character.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [Character 'c'; Character 'd'; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: true is not a character.") -> ())
+  and b8 = (try ignore (candidate [Character 'c'; Character 'c'; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: [] is not a character.") -> ())
+  and b9 = (try ignore (candidate [Int 5; Character 'c'; Character 'd']);
+                failwith "Error not raised" with Primitives.Error("Error in char>?: 5 is not a character.") -> ())
+  and b10 = (try ignore (candidate [String "interpreter"; Character 'c';
+                                    Character 'c']);
+                 failwith "Error not raised" with Primitives.Error("Error in char>?: \"interpreter\" is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_char_gt internal_char_gt);;
-(* test_internal_char_gt_error internal_char_gt;*)
+test_internal_char_gt_error internal_char_gt;;
 
 let test_internal_char_ge candidate =
   (* Test for single argument case *)
@@ -874,11 +1339,39 @@ let test_internal_char_ge candidate =
                         Character 'G'; Character 'b'; Character 'b';
                         Character 'z'] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11;;
-                                                           
-(* let test_internal_char_ge_error candidate *)
+
+let test_internal_char_ge_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: 5 is not a character.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: false is not a character.") -> ())
+  and b3 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: \"hello\" is not a character.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: ('c' , '1') is not a character.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: Closure function is not a character.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: Primitive function is not a character.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [Character 'c'; Character 'd'; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: true is not a character.") -> ())
+  and b8 = (try ignore (candidate [Character 'c'; Character 'c'; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: [] is not a character.") -> ())
+  and b9 = (try ignore (candidate [Int 5; Character 'c'; Character 'd']);
+                failwith "Error not raised" with Primitives.Error("Error in char>=?: 5 is not a character.") -> ())
+  and b10 = (try ignore (candidate [String "interpreter"; Character 'c';
+                                    Character 'c']);
+                 failwith "Error not raised" with Primitives.Error("Error in char>=?: \"interpreter\" is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_char_ge internal_char_ge);;
-(* test_internal_char_ge_error internal_char_ge;*)
+test_internal_char_ge_error internal_char_ge;;
 
 let test_internal_char_lt candidate =
   (* Test for single argument case *)
@@ -909,10 +1402,38 @@ let test_internal_char_lt candidate =
                         Character 'g'; Character 'z'] = Boolean false)
   in  b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12;;
 
-(* let test_internal_char_lt_error candidate *)
+let test_internal_char_lt_error candidate =
+   (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: 5 is not a character.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: false is not a character.") -> ())
+  and b3 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: \"hello\" is not a character.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: ('c' , '1') is not a character.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: Closure function is not a character.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: Primitive function is not a character.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [Character 'd'; Character 'c'; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: true is not a character.") -> ())
+  and b8 = (try ignore (candidate [Character 'c'; Character 'c'; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: [] is not a character.") -> ())
+  and b9 = (try ignore (candidate [Int 5; Character 'd'; Character 'c']);
+                failwith "Error not raised" with Primitives.Error("Error in char<?: 5 is not a character.") -> ())
+  and b10 = (try ignore (candidate [String "interpreter"; Character 'c';
+                                    Character 'c']);
+                 failwith "Error not raised" with Primitives.Error("Error in char<?: \"interpreter\" is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_char_lt internal_char_lt);;
-(* test_internal_char_lt_error internal_char_lt;*)
+test_internal_char_lt_error internal_char_lt;;
 
 let test_internal_char_le candidate =
   (* Test for single argument case *)
@@ -949,10 +1470,38 @@ let test_internal_char_le candidate =
                        Character 'Z'; Character 'D'] = Boolean false)
   in  b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15;;
 
-(* let test_internal_char_le_error candidate *)
+let test_internal_char_le_error candidate =
+   (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: 5 is not a character.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: false is not a character.") -> ())
+  and b3 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: \"hello\" is not a character.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: ('c' , '1') is not a character.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: Closure function is not a character.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: Primitive function is not a character.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [Character 'd'; Character 'c'; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: true is not a character.") -> ())
+  and b8 = (try ignore (candidate [Character 'c'; Character 'c'; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: [] is not a character.") -> ())
+  and b9 = (try ignore (candidate [Int 5; Character 'd'; Character 'c']);
+                failwith "Error not raised" with Primitives.Error("Error in char<=?: 5 is not a character.") -> ())
+  and b10 = (try ignore (candidate [String "interpreter"; Character 'c';
+                                    Character 'c']);
+                 failwith "Error not raised" with Primitives.Error("Error in char<=?: \"interpreter\" is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_char_le internal_char_le);;
-(* test_internal_char_le_error internal_char_le;*)
+test_internal_char_le_error internal_char_le;;
 
 let test_internal_char_numeric candidate =
   let b0 = (candidate [Character '0'] = Boolean true)
@@ -974,10 +1523,40 @@ let test_internal_char_numeric candidate =
   and b16 = (candidate [Character '+'] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16;;
 
-(* let test_internal_char_numeric_error candidate *)
+let test_internal_char_numeric_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  and b1 = (try ignore (candidate [Character '1'; Character '2']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['1'; '2']") -> ())
+  and b2 = (try ignore (candidate [Character '1'; Character '2'; Character 'c']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['1'; '2'; 'c']") -> ())
+  and b3 = (try ignore (candidate [Character '1'; Null]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['1'; []]") -> ())
+  and b4 = (try ignore (candidate [Character '1'; Null; Int 500]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['1'; []; 500]") -> ())
+  and b5 = (try ignore (candidate [Pair(Character '1',
+                                        Character 'a'); Null; Int 500;
+                                   Character 'c']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [('1' , 'a'); []; 500; 'c']") -> ())
+  (* test for incorrect type of argument *)
+  and b6 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in char-numeric?: 5 is not a character.") -> ())
+  and b7 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in char-numeric?: false is not a character.") -> ())
+  and b8 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in char-numeric?: \"hello\" is not a character.") -> ())
+  and b9 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in char-numeric?: ('c' , '1') is not a character.") -> ())
+  and b10 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in char-numeric?: Closure function is not a character.") -> ())
+  and b11 = (try ignore (candidate [Primitive internal_is_char]);
+                 failwith "Error not raised" with Primitives.Error("Error in char-numeric?: Primitive function is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11;;
 
 assert(test_internal_char_numeric internal_char_numeric);;
-(* test_internal_char_numeric_error internal_char_numeric;*)
+test_internal_char_numeric_error internal_char_numeric;;
 
 let test_internal_char_alphabetic_lower_case candidate =
   let b0 = (candidate [Character 'a'] = Boolean true)
@@ -1056,12 +1635,42 @@ let test_internal_char_alphabetic_false candidate =
   and b15 = (candidate [Character ':'] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15;;
 
-(* let test_internal_char_alphabetic_error candidate *)
+let test_internal_char_alphabetic_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  and b1 = (try ignore (candidate [Character 'a'; Character 'A']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['a'; 'A']") -> ())
+  and b2 = (try ignore (candidate [Character 'A'; Character 'z'; Character '3']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['A'; 'z'; '3']") -> ())
+  and b3 = (try ignore (candidate [Character 'G'; Null]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['G'; []]") -> ())
+  and b4 = (try ignore (candidate [Character 'j'; Null; Int 500]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call ['j'; []; 500]") -> ())
+  and b5 = (try ignore (candidate [Pair(Character '1',
+                                        Character 'a'); Null; Int 500;
+                                   Character 'c']);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [('1' , 'a'); []; 500; 'c']") -> ())
+  (* test for incorrect type of argument *)
+  and b6 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in char-alphabetic?: 5 is not a character.") -> ())
+  and b7 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in char-alphabetic?: false is not a character.") -> ())
+  and b8 = (try ignore (candidate [String "hello"]);
+                failwith "Error not raised" with Primitives.Error("Error in char-alphabetic?: \"hello\" is not a character.") -> ())
+  and b9 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in char-alphabetic?: ('c' , '1') is not a character.") -> ())
+  and b10 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in char-alphabetic?: Closure function is not a character.") -> ())
+  and b11 = (try ignore (candidate [Primitive internal_is_char]);
+                 failwith "Error not raised" with Primitives.Error("Error in char-alphabetic?: Primitive function is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11;;
 
 assert(test_internal_char_alphabetic_lower_case internal_char_alphabetic);;
 assert(test_internal_char_alphabetic_upper_case internal_char_alphabetic);;
 assert(test_internal_char_alphabetic_false internal_char_alphabetic);;
-(* test_internal_char_lt_error internal_char_lt;*)
+test_internal_char_alphabetic_error internal_char_alphabetic;;
 
 let test_internal_is_str candidate =
   let b0 = (candidate [String "a"] = Boolean true)
@@ -1088,10 +1697,24 @@ let test_internal_is_str candidate =
   and b19 = (candidate [Primitive internal_is_str] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19;;
 
-(* let test_internal_is_str_error candidate = *)
+let test_internal_is_str_error candidate =
+  let b0 = (try ignore (candidate [Pair(Character 'c', Int 3);
+                                   Pair(Boolean true, String "9")]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [('c' , 3); (true , \"9\")]") -> ())
+  and b1 = (try ignore (candidate [String "hello" ; String "+"; String "X86_call";
+                                   String "taba_paper"]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [\"hello\"; \"+\"; \"X86_call\"; \"taba_paper\"]") -> ())
+  and b2 = (try ignore (candidate [Boolean true; Int 5; Character 's';
+                                   String "hi"; Null]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [true; 5; 's'; \"hi\"; []]") -> ())
+  and b3 = (try ignore (candidate [String "1"; String "ab"]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [\"1\"; \"ab\"]") -> ())
+  and b4 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  in b0; b1; b2; b3; b4;;
 
 assert(test_internal_is_str internal_is_str);;
-(* test_internal_is_str_error internal_is_str ;*)
+test_internal_is_str_error internal_is_str ;;
 
 let test_internal_str_equal candidate =
   (* Test for single argument case *)
@@ -1112,10 +1735,41 @@ let test_internal_str_equal candidate =
   and b8 = (candidate [String "This is a test for primitives.ml"; String "Thi is a test for primitives.ml"; String "This is a test for primitives.ml"] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8;;
 
-(* let test_internal_str_equal_error candidate = *)
+let test_internal_str_equal_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: 5 is not a string.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: false is not a string.") -> ())
+  and b3 = (try ignore (candidate [Character 'h']);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: 'h' is not a string.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: ('c' , '1') is not a string.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: Closure function is not a string.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: Primitive function is not a string.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [String "hello"; String "wayne"; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: [] is not a string.") ->())
+  and b8 = (try ignore (candidate [String "hello"; String "wayne"; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: 5 is not a string.") ->())
+  and b9 = (try ignore (candidate [String "hello"; String "hello"; Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string=?: false is not a string.") ->())
+  and b10 = (try ignore (candidate [Pair(String "hi",
+                                         String "there"); String "wayne";
+                                    String "ffxiv"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string=?: (\"hi\" , \"there\") is not a string.") ->())
+  and b11 = (try ignore (candidate [Character 'f'; String "h"; String "good"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string=?: 'f' is not a string.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11;;
 
 assert(test_internal_str_equal internal_str_equal);;
-(* test_internal_str_equal_error internal_str_equal ;*)
+test_internal_str_equal_error internal_str_equal ;;
                                                          
 let test_internal_str_gt candidate =
   (* test for single argument case *)
@@ -1143,10 +1797,41 @@ let test_internal_str_gt candidate =
                         String "zestrian"] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11;;
         
- (* let test_internal_str_gt_error candidate = *)
+let test_internal_str_gt_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: 5 is not a string.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: false is not a string.") -> ())
+  and b3 = (try ignore (candidate [Character 'h']);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: 'h' is not a string.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: ('c' , '1') is not a string.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: Closure function is not a string.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: Primitive function is not a string.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [String "hello"; String "wayne"; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: [] is not a string.") ->())
+  and b8 = (try ignore (candidate [String "hello"; String "wayne"; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: 5 is not a string.") ->())
+  and b9 = (try ignore (candidate [String "zenos"; String "wayne"; Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string>?: false is not a string.") ->())
+  and b10 = (try ignore (candidate [Pair(String "hi",
+                                         String "there"); String "wayne";
+                                    String "ffxiv"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string>?: (\"hi\" , \"there\") is not a string.") ->())
+  and b11 = (try ignore (candidate [Character 'f'; String "h"; String "good"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string>?: 'f' is not a string.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11;;
 
 assert(test_internal_str_gt internal_str_gt);;
-(* test_internal_str_gt_error internal_str_gt ;*) 
+test_internal_str_gt_error internal_str_gt ;;
 
 let test_internal_str_ge candidate =
   (* test for single argument case *)
@@ -1184,10 +1869,41 @@ let test_internal_str_ge candidate =
                         String "zestrian"] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16;;
         
- (* let test_internal_str_ge_error candidate = *)
+let test_internal_str_ge_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: 5 is not a string.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: false is not a string.") -> ())
+  and b3 = (try ignore (candidate [Character 'h']);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: 'h' is not a string.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: ('c' , '1') is not a string.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: Closure function is not a string.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: Primitive function is not a string.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [String "hello"; String "wayne"; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: [] is not a string.") ->())
+  and b8 = (try ignore (candidate [String "hello"; String "wayne"; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: 5 is not a string.") ->())
+  and b9 = (try ignore (candidate [String "zenos"; String "wayne"; Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string>=?: false is not a string.") ->())
+  and b10 = (try ignore (candidate [Pair(String "hi",
+                                         String "there"); String "wayne";
+                                    String "ffxiv"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string>=?: (\"hi\" , \"there\") is not a string.") ->())
+  and b11 = (try ignore (candidate [Character 'f'; String "h"; String "good"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string>=?: 'f' is not a string.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11;;
 
 assert(test_internal_str_ge internal_str_ge);;
-(* test_internal_str_ge_error internal_str_ge ;*) 
+test_internal_str_ge_error internal_str_ge ;;
 
 let test_internal_str_lt candidate =
   (* test for single argument case *)
@@ -1229,10 +1945,41 @@ let test_internal_str_lt candidate =
                        String "d"] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18;;
 
-(* let test_internal_str_lt_error candidate = *)
+let test_internal_str_lt_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: 5 is not a string.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: false is not a string.") -> ())
+  and b3 = (try ignore (candidate [Character 'h']);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: 'h' is not a string.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: ('c' , '1') is not a string.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: Closure function is not a string.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: Primitive function is not a string.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [String "wayne"; String "hello"; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: [] is not a string.") ->())
+  and b8 = (try ignore (candidate [String "wayne"; String "hello"; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: 5 is not a string.") ->())
+  and b9 = (try ignore (candidate [String "hello"; String "wayne"; Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string<?: false is not a string.") ->())
+  and b10 = (try ignore (candidate [Pair(String "hi",
+                                         String "there"); String "wayne";
+                                    String "ffxiv"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string<?: (\"hi\" , \"there\") is not a string.") ->())
+  and b11 = (try ignore (candidate [Character 'f'; String "h"; String "good"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string<?: 'f' is not a string.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11;;
 
 assert(test_internal_str_lt internal_str_lt);;
-(* test_internal_str_lt_error internal_str_lt ;*) 
+test_internal_str_lt_error internal_str_lt ;;
 
 let test_internal_str_le candidate =
   (* test for single argument case *)
@@ -1274,10 +2021,41 @@ let test_internal_str_le candidate =
                        String "hel"] = Boolean false)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18;;
 
-(* let test_internal_str_le_error candidate = *)
+let test_internal_str_le_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  (* test for incorrect type of arguments for single argument case *)
+  and b1 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: 5 is not a string.") -> ())
+  and b2 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: false is not a string.") -> ())
+  and b3 = (try ignore (candidate [Character 'h']);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: 'h' is not a string.") -> ())
+  and b4 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: ('c' , '1') is not a string.") -> ())
+  and b5 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: Closure function is not a string.") -> ())
+  and b6 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: Primitive function is not a string.") -> ())
+  (* test for incorrect type of arguments for more than 1 argument case *)
+  and b7 = (try ignore (candidate [String "wayne"; String "hello"; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: [] is not a string.") ->())
+  and b8 = (try ignore (candidate [String "wayne"; String "hello"; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: 5 is not a string.") ->())
+  and b9 = (try ignore (candidate [String "hello"; String "wayne"; Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string<=?: false is not a string.") ->())
+  and b10 = (try ignore (candidate [Pair(String "hi",
+                                         String "there"); String "wayne";
+                                    String "ffxiv"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string<=?: (\"hi\" , \"there\") is not a string.") ->())
+  and b11 = (try ignore (candidate [Character 'f'; String "h"; String "good"]);
+                 failwith "Error not raised" with Primitives.Error("Error in string<=?: 'f' is not a string.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11;;
 
 assert(test_internal_str_le internal_str_le);;
-(* test_internal_str_le_error internal_str_le ;*) 
+test_internal_str_le_error internal_str_le ;;
 
 let test_internal_str_length candidate =
   let b0 = (candidate [String ""] = Int 0)
@@ -1290,10 +2068,37 @@ let test_internal_str_length candidate =
   and b7 = (candidate [String "[1;2;3;4;5;6]"] = Int 13)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7;;
               
-(* let test_internal_str_length_error candidate = *)
+let test_internal_str_length_error candidate = 
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  and b1 = (try ignore (candidate [String "hello"; String "there"; String "obi"]);
+                failwith  "Error not raised" with Primitives.Error("Incorrect argument count in call [\"hello\"; \"there\"; \"obi\"]") -> ())
+  and b2 = (try ignore (candidate [String "hello"; String "there"; String "obi";
+                                   String "wan"]);
+                failwith  "Error not raised" with Primitives.Error("Incorrect argument count in call [\"hello\"; \"there\"; \"obi\"; \"wan\"]") -> ())
+  and b3 = (try ignore (candidate [String "hello"; Int 5]);
+                failwith  "Error not raised" with Primitives.Error("Incorrect argument count in call [\"hello\"; 5]") -> ())
+  and b4 = (try ignore (candidate [String "hello"; Int 5; Null]);
+                failwith  "Error not raised" with Primitives.Error("Incorrect argument count in call [\"hello\"; 5; []]") -> ())
+  (* test for incorrect type of argument *)
+  and b5 = (try ignore (candidate [Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string-length?: 5 is not a string.") -> ())
+  and b6 = (try ignore (candidate [Boolean false]);
+                failwith "Error not raised" with Primitives.Error("Error in string-length?: false is not a string.") -> ())
+  and b7 = (try ignore (candidate [Character 'h']);
+                failwith "Error not raised" with Primitives.Error("Error in string-length?: 'h' is not a string.") -> ())
+  and b8 = (try ignore (candidate [Pair(Character 'c',
+                                        Character '1')]);
+                failwith "Error not raised" with Primitives.Error("Error in string-length?: ('c' , '1') is not a string.") -> ())
+  and b9 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in string-length?: Closure function is not a string.") -> ())
+  and b10 = (try ignore (candidate [Primitive internal_is_char]);
+                failwith "Error not raised" with Primitives.Error("Error in string-length?: Primitive function is not a string.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_str_length internal_str_length);;
-(* test_internal_str_length_error internal_str_length ;*)
+test_internal_str_length_error internal_str_length;;
 
 let test_internal_char_to_str candidate =
   let b0 = (candidate [Character 'a'] = String "a")
@@ -1311,7 +2116,33 @@ let test_internal_char_to_str candidate =
                        Character '9'; Character '8'; Character '!'] = String "Hawk9598!")
   in b0 && b1 && b2 && b3 && b4;;
 
-(* let test_internal_char_to_str_error candidate = *)
+let test_internal_char_to_str_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+    (* test for incorrect type of arguments *)
+  and b1 = (try ignore (candidate [Character '5'; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in string: true is not a character.") -> ())
+  and b2 = (try ignore (candidate [Character 'a'; Character '-'; Null]);
+                failwith "Error not raised" with Primitives.Error("Error in string: [] is not a character.") -> ())
+  and b3 = (try ignore (candidate [Character 'a'; Character '-'; Character '1';
+                                   String "hello"; Null; Int 5]);
+                failwith "Error not raised" with Primitives.Error("Error in string: \"hello\" is not a character.") -> ())
+  and b4 = (try ignore (candidate [Character 'a'; Character '-'; Character '1';
+                                   Int 5; Primitive internal_cons]);
+                failwith "Error not raised" with Primitives.Error("Error in string: 5 is not a character.") -> ())
+  and b5 = (try ignore (candidate [Character 'a'; Character '-'; Character '1';
+                                   Primitive internal_cons; Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Error in string: Primitive function is not a character.") -> ())
+  and b6 = (try ignore (candidate [Character 'a'; Character '-'; Character '1';
+                                   Closure identity; Pair(Character 'k',
+                                                          Character '[')]);
+                failwith "Error not raised" with Primitives.Error("Error in string: Closure function is not a character.") -> ())
+  and b7 = (try ignore (candidate [Character 'a'; Character '-'; Character '1';
+                                   Pair(Character 'k',
+                                        Character '['); Character 'p']);
+                failwith "Error not raised" with Primitives.Error("Error in string: ('k' , '[') is not a character.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7;;
 
 assert(test_internal_char_to_str internal_char_to_str);;
-(* test_internal_char_to_str_error internal_char_to_str ;*)
+test_internal_char_to_str_error internal_char_to_str ;;

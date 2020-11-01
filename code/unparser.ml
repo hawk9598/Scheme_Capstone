@@ -133,3 +133,32 @@ let rec show_exp_val (v : exp_val): string  =
   end;;
 
 assert (test_show_exp_val show_exp_val);;
+
+let test_show_list_of_exp_val candidate =
+  (* test for list of exp_val with only 0 or 1 argument *)
+  let b0 = (candidate show_exp_val [Int 5] = "[5]")
+  and b1 = (candidate show_exp_val [Boolean true] = "[true]")
+  and b2 = (candidate show_exp_val [String "hello"] = "[\"hello\"]")
+  and b3 = (candidate show_exp_val [Character 'a'] = "['a']")
+  and b4 = (candidate show_exp_val [Pair(Character 'a',
+                                         String "his")] = "[('a' , \"his\")]")
+  and b5 = (candidate show_exp_val [Closure identity] = "[Closure function]")
+  and b6 = (candidate show_exp_val [Primitive identity] = "[Primitive function]")
+  and b7 = (candidate show_exp_val [Null] = "[[]]")
+  and b8 = (candidate show_exp_val [] = "[]")
+  (* test for multiple arguments in list of exp_val *)
+  and b9 = (candidate show_exp_val [Int 5; Int 6] = "[5; 6]")
+  and b10 = (candidate show_exp_val [Boolean true; Int 5;
+                                     Character 'a'] = "[true; 5; 'a']")
+  and b11 = (candidate show_exp_val [String "x86_sim"; Null;
+                                     Character '+'] = "[\"x86_sim\"; []; '+']")
+  and b12 = (candidate show_exp_val [Pair(Int 5,
+                                          Character '5'); Null; Closure identity]
+             = "[(5 , '5'); []; Closure function]")
+  and b13 = (candidate show_exp_val [Int (-100); Primitive identity; Boolean true;
+                                     Pair(Null,
+                                          String "hi")]
+             = "[~-100; Primitive function; true; ([] , \"hi\")]")
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13;;
+
+assert(test_show_list_of_exp_val show_list);;

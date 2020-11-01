@@ -404,7 +404,12 @@ let internal_div =
                    begin
                      match v with
                      |Int i ->
-                       visit_div vs'' (a / i)
+                       if i = 0
+                       then raise (Error
+                                     (Printf.sprintf
+                                        "Error in /: undefined for 0."))
+                       else
+                         visit_div vs'' (a / i)
                      |_ ->
                        raise (Error
                                 (Printf.sprintf
@@ -432,7 +437,12 @@ let internal_quotient =
             begin
               match v2 with
               |Int i2 ->
-                Int (i1 / i2)
+                if i2 = 0
+                then raise (Error
+                              (Printf.sprintf
+                                 "Error in quotient: undefined for 0."))
+                else
+                  Int (i1 / i2)
               |_ ->
                 raise (Error
                          (Printf.sprintf
@@ -463,7 +473,12 @@ let internal_remainder =
             begin
               match v2 with
               |Int i2 ->
-                Int (i1 mod i2)
+                if i2 = 0
+                then raise (Error
+                              (Printf.sprintf
+                                 "Error in remainder: undefined for 0."))
+                else
+                  Int (i1 mod i2)
               |_ ->
                 raise (Error
                          (Printf.sprintf
@@ -564,7 +579,10 @@ let internal_lt =
                     if i > i'
                     then visit_lt vs' i a
                     else
-                      Boolean false
+                      if a
+                      then visit_lt vs' i false
+                      else
+                        visit_lt vs' i a
                   |_ ->
                     raise (Error
                              (Printf.sprintf
@@ -615,7 +633,10 @@ let internal_lte =
                     if i >= i'
                     then visit_lte vs' i a
                     else
-                      Boolean false
+                      if a
+                      then visit_lte vs' i false
+                      else
+                        visit_lte vs' i a
                   |_ ->
                     raise (Error
                              (Printf.sprintf
@@ -666,7 +687,10 @@ let internal_gt =
                     if i < i'
                     then visit_gt vs' i a
                     else
-                      Boolean false
+                      if a
+                      then visit_gt vs' i false
+                      else
+                        visit_gt vs' i a
                   |_ ->
                     raise (Error
                              (Printf.sprintf
@@ -717,7 +741,10 @@ let internal_gte =
                     if i <= i'
                     then visit_gte vs' i a
                     else
-                      Boolean false
+                      if a
+                      then visit_gte vs' i false
+                      else
+                        visit_gte vs' i a
                   |_ ->
                     raise (Error
                              (Printf.sprintf
@@ -769,7 +796,10 @@ let internal_equal =
                     if i = i'
                     then visit_equal vs' i a
                     else
-                      Boolean false
+                      if a
+                      then visit_equal vs' i false
+                      else
+                        visit_equal vs' i a
                   |_ ->
                     raise (Error
                              (Printf.sprintf
@@ -844,7 +874,10 @@ let internal_char_equal =
                       if c = c'
                       then visit_char_equal vs' c a
                       else
-                        Boolean false
+                        if a
+                        then visit_char_equal vs' c false
+                        else
+                          visit_char_equal vs' c a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -897,7 +930,10 @@ let internal_char_gt =
                       if c < c'
                       then visit_char_gt vs' c a
                       else
-                        Boolean false
+                        if a
+                        then visit_char_gt vs' c false
+                        else
+                          visit_char_gt vs' c a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -950,7 +986,10 @@ let internal_char_ge =
                       if c <= c'
                       then visit_char_ge vs' c a
                       else
-                        Boolean false
+                        if a
+                        then visit_char_ge vs' c false
+                        else
+                          visit_char_ge vs' c a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -1004,7 +1043,10 @@ let internal_char_lt =
                       if c > c'
                       then visit_char_lt vs' c a
                       else
-                        Boolean false
+                        if a
+                        then visit_char_lt vs' c false
+                        else
+                          visit_char_lt vs' c a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -1058,7 +1100,10 @@ let internal_char_le =
                       if c >= c'
                       then visit_char_le vs' c a
                       else
-                        Boolean false
+                        if a
+                        then visit_char_le vs' c false
+                        else
+                          visit_char_le vs' c a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -1126,7 +1171,7 @@ let internal_char_alphabetic =
             raise
               (Error
                  (Printf.sprintf
-                    "Error in char-numeric?: %s is not a character."
+                    "Error in char-alphabetic?: %s is not a character."
                     (show_exp_val v)))
         end
       |_ ->
@@ -1194,7 +1239,10 @@ let internal_str_equal =
                       if s = s'
                       then visit_str_equal vs' s a
                       else
-                        Boolean false
+                        if a
+                        then visit_str_equal vs' s false
+                        else
+                          visit_str_equal vs' s a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -1247,7 +1295,10 @@ let internal_str_gt =
                       if s < s'
                       then visit_str_gt vs' s a
                       else
-                        Boolean false
+                        if a
+                        then visit_str_gt vs' s false
+                        else
+                          visit_str_gt vs' s a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -1300,7 +1351,10 @@ let internal_str_ge =
                       if s <= s'
                       then visit_str_ge vs' s a
                       else
-                        Boolean false
+                        if a
+                        then visit_str_ge vs' s false
+                        else
+                          visit_str_ge vs' s a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -1353,7 +1407,10 @@ let internal_str_lt =
                       if s > s'
                       then visit_str_lt vs' s a
                       else
-                        Boolean false
+                        if a
+                        then visit_str_lt vs' s false
+                        else
+                          visit_str_lt vs' s a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
@@ -1407,7 +1464,10 @@ let internal_str_le =
                       if s >= s'
                       then visit_str_le vs' s a
                       else
-                        Boolean false
+                        if a
+                        then visit_str_le vs' s false
+                        else
+                          visit_str_le vs' s a
                     |_ ->
                       raise (Error
                                (Printf.sprintf
