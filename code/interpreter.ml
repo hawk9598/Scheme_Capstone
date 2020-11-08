@@ -53,6 +53,8 @@ let rec eval (exp : exp) (env: env): exp_val =
                       "Not a procedure: %s"
                       (show_exp_val v)))
       end
+    |Let (_, _) ->
+      raise Not_implemented_yet
     |Let_rec (_, _) ->
       raise Not_implemented_yet
     |Lambda_abstraction (Lambda(formals, body)) ->

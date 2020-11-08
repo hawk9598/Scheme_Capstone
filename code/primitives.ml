@@ -31,7 +31,7 @@ let internal_cons =
     begin
       match vs with
       |v1 :: v2 :: [] ->
-        Pair (v1, v2) (*Pair (ref v1, ref v2) *)
+        Pair (v1, v2)
       |_ ->
         raise (Error
                  (Printf.sprintf
@@ -39,6 +39,8 @@ let internal_cons =
                     (show_list show_exp_val vs)))
     end)
 
+
+(*Pair (ref v1, ref v2) *)
 (* let internal_set_car vs =
   begin             
     match vs with
@@ -87,6 +89,8 @@ let internal_set_cdr vs =
                   (show_list show_exp_val vs)))
   end
  *)
+(* !v1 *)
+  
 
 let internal_car =
   (fun vs ->
@@ -96,7 +100,7 @@ let internal_car =
         begin
           match v with
           |Pair (v1, _) ->
-            v1 (* !v1 *)
+            v1 
           |_ ->
             raise (Error
                      (Printf.sprintf
@@ -554,17 +558,6 @@ let internal_lt =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Int _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in <: %s is not a number."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin match v1 with
         |Int i1 ->
@@ -608,17 +601,6 @@ let internal_lte =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Int _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in <=: %s is not a number."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin match v1 with
         |Int i1 ->
@@ -662,17 +644,6 @@ let internal_gt =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Int _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in >: %s is not a number."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin match v1 with
         |Int i1 ->
@@ -716,17 +687,6 @@ let internal_gte =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Int _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in >=: %s is not a number."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin match v1 with
         |Int i1 ->
@@ -770,17 +730,6 @@ let internal_equal =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Int _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in =: %s is not a number."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -847,17 +796,6 @@ let internal_char_equal =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Character _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in char=?: %s is not a character."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -903,17 +841,6 @@ let internal_char_gt =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Character _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in char>?: %s is not a character."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -959,17 +886,6 @@ let internal_char_ge =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Character _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in char>=?: %s is not a character."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1016,17 +932,6 @@ let internal_char_lt =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Character _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in char<?: %s is not a character."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1073,17 +978,6 @@ let internal_char_le =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |Character _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in char<=?: %s is not a character."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1212,17 +1106,6 @@ let internal_str_equal =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |String _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in string=?: %s is not a string."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1268,17 +1151,6 @@ let internal_str_gt =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |String _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in string>?: %s is not a string."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1324,17 +1196,6 @@ let internal_str_ge =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |String _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in string>=?: %s is not a string."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1380,17 +1241,6 @@ let internal_str_lt =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |String _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in string<?: %s is not a string."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1437,17 +1287,6 @@ let internal_str_le =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-      |v :: [] ->
-        begin
-          match v with
-          |String _ ->
-            Boolean true
-          |_ ->
-            raise (Error
-                     (Printf.sprintf
-                        "Error in string<=?: %s is not a string."
-                        (show_exp_val v)))
-        end
       |v1 :: vs' ->
         begin
           match v1 with
@@ -1536,7 +1375,7 @@ let internal_char_to_str =
         in String (String.concat "" (make_str_from_chars vs))
     end)
 
-(* let internal_str_ref =
+let internal_str_ref =
   (fun vs ->
     begin
       match vs with
@@ -1574,11 +1413,9 @@ let internal_char_to_str =
                  (Printf.sprintf
                     "Incorrect argument count in call %s"
                     (show_list show_exp_val vs)))
-    end) *)
+    end) 
 
     (* Change error message such that the calling function name is also present *)
-
-     (* Strings can be assumed to be immutable for the interpreter *)
 
      (* What other things do I need to do, i.e. do I test my eval function on more complicated programs involving the native primitives? *)
 

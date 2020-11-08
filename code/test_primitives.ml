@@ -2146,3 +2146,49 @@ let test_internal_char_to_str_error candidate =
 
 assert(test_internal_char_to_str internal_char_to_str);;
 test_internal_char_to_str_error internal_char_to_str ;;
+
+let test_internal_str_ref candidate =
+  let b0 = (candidate [String "String-123"; (Int 0)] = Character 'S')
+  and b1 = (candidate [String "String-123"; (Int 1)] = Character 't')
+  and b2 = (candidate [String "String-123"; (Int 2)] = Character 'r')
+  and b3 = (candidate [String "String-123"; (Int 3)] = Character 'i')
+  and b4 = (candidate [String "String-123"; (Int 4)] = Character 'n')
+  and b5 = (candidate [String "String-123"; (Int 5)] = Character 'g')
+  and b6 = (candidate [String "String-123"; (Int 6)] = Character '-')
+  and b7 = (candidate [String "String-123"; (Int 7)] = Character '1')
+  and b8 = (candidate [String "String-123"; (Int 8)] = Character '2')
+  and b9 = (candidate [String "String-123"; (Int 9)] = Character '3')
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9;;
+
+let test_internal_str_ref_error candidate =
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+  and b1 = (try ignore (candidate [String "String-123"]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [\"String-123\"]") -> ())
+  and b2 = (try ignore (candidate [String "String-123"; Int 0; Int 1]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [\"String-123\"; 0; 1]") -> ())
+  and b3 = (try ignore (candidate [String "String-123"; String "0"; Int 1]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [\"String-123\"; \"0\"; 1]") -> ())
+  and b4 = (try ignore (candidate [String "String-123"; Int 10]);
+                failwith "Error not raised" with Primitives.Error("Error in string-ref: 10 is not a valid index for \"String-123\".")-> ())
+  and b5 = (try ignore (candidate [String "String-123"; Int 20]);
+                failwith "Error not raised" with Primitives.Error("Error in string-ref: 20 is not a valid index for \"String-123\".")-> ())
+  and b6 = (try ignore (candidate [String "String-123"; Character 'c']);
+                failwith "Error not raised" with Primitives.Error("Error in string-ref: 'c' is not a valid index for \"String-123\".")-> ())
+  and b7 = (try ignore (candidate [String "String-123"; Boolean true]);
+                failwith "Error not raised" with Primitives.Error("Error in string-ref: true is not a valid index for \"String-123\".")-> ())
+  and b8 = (try ignore (candidate [String "String-123"; String "5"]);
+                failwith "Error not raised" with Primitives.Error("Error in string-ref: \"5\" is not a valid index for \"String-123\".")-> ())
+  and b9 = (try ignore (candidate [String "String-123"; Pair(Int 0,
+                                                             Int 1)]);
+                failwith "Error not raised" with Primitives.Error("Error in string-ref: (0 , 1) is not a valid index for \"String-123\".")-> ())
+  and b10 = (try ignore (candidate [Int 0; Int 1]);
+                failwith "Error not raised" with Primitives.Error("Error in string-ref: 0 is not a string.") -> ())
+  and b11 = (try ignore (candidate [Character 'C'; Int 1]);
+                 failwith "Error not raised" with Primitives.Error("Error in string-ref: 'C' is not a string.") -> ())
+  and b12 = (try ignore (candidate [Boolean true; Int 2]);
+                 failwith "Error not raised" with Primitives.Error("Error in string-ref: true is not a string.") -> ())
+  and b13 = (try ignore (candidate [Pair(String "hello",
+                                         String "world"); Int 2]);
+                 failwith "Error not raised" with Primitives.Error("Error in string-ref: (\"hello\" , \"world\") is not a string.") -> ())
+  in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10; b11; b12; b13;;

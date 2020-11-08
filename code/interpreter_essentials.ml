@@ -13,6 +13,7 @@ let empty_alist = []
          
 let default_empty_alist =
   [ ("pair?", Primitive internal_is_pair);
+    ("cons", Primitive internal_cons);
     ("car", Primitive internal_car);
     ("cdr", Primitive internal_cdr);
     ("integer?", Primitive internal_is_int);
@@ -32,7 +33,24 @@ let default_empty_alist =
     ("<=", Primitive internal_lte);
     (">", Primitive internal_gt);
     (">=", Primitive internal_gte);
-    ("=", Primitive internal_equal)
+    ("=", Primitive internal_equal);
+    ("char?", Primitive internal_is_char);
+    ("char=?", Primitive internal_char_equal);
+    ("char>?", Primitive internal_char_gt);
+    ("char>=?", Primitive internal_char_ge);
+    ("char<?", Primitive internal_char_lt);
+    ("char<=?", Primitive internal_char_le);
+    ("char-numeric?", Primitive internal_char_numeric);
+    ("char-alphabetic?", Primitive internal_char_alphabetic);
+    ("string?", Primitive internal_is_str);
+    ("string=?", Primitive internal_str_equal);
+    ("string>?", Primitive internal_str_gt);
+    ("string>=?", Primitive internal_str_ge);
+    ("string<?", Primitive internal_str_lt);
+    ("string<=", Primitive internal_str_le);
+    ("string-length?", Primitive internal_str_length);
+    ("string", Primitive internal_char_to_str);
+    ("string-ref", Primitive internal_str_ref)
   ]
 
 let extend_alist x d env =

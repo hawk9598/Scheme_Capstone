@@ -28,13 +28,13 @@ type prog =
   |Prog of top_level_form list
 
 type exp_val =
-  |Int of int
-  |Boolean of bool
-  |String of string
-  |Character of char
-  |Pair of exp_val * exp_val (* decide to make pairs immutable for now *)
-  |Closure of (exp_val list -> exp_val)
-  |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
+  |Int of int (* Integer *)
+  |Boolean of bool (* Boolean *)
+  |String of string (* String *)
+  |Character of char (* Character *)
+  |Pair of exp_val * exp_val (* Pair of expressible values*)
+  |Closure of (exp_val list -> exp_val) (* Function *)
+  |Primitive of (exp_val list -> exp_val) (* Primitive function *)
   |Null (* empty list *) 
   
 (* type quotation =
