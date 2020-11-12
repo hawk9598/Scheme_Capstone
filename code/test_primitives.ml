@@ -347,11 +347,13 @@ assert(test_internal_is_negative internal_is_negative);;
 test_internal_is_negative_error internal_is_negative;;
 
 let test_internal_is_even candidate =
+  (* Test for the case where input is even *)
   let b0 = (candidate [Int 0] = Boolean true)
   and b1 = (candidate [Int 2] = Boolean true)
   and b2 = (candidate [Int 40296] = Boolean true)
   and b3 = (candidate [Int (-2)] = Boolean true)
   and b4 = (candidate [Int (-20148)] = Boolean true)
+  (* Test for the case where input is odd *)
   and b5 = (candidate [Int 1] = Boolean false)
   and b6 = (candidate [Int 3] = Boolean false)
   and b7 = (candidate [Int (-19)] = Boolean false)
@@ -361,30 +363,41 @@ let test_internal_is_even candidate =
 let test_internal_is_even_error candidate =
   (* test for incorrect number of arguments first *)
   let b0 = (try ignore (candidate []);
-                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call []") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Incorrect argument count in call []") -> ())
   and b1 = (try ignore (candidate [Int (-6); Int 0]);
-                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [~-6; 0]") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Incorrect argument count in call [~-6; 0]") -> ())
   and b2 = (try ignore (candidate [Pair(Int 5,
                                         Boolean true); Int 100]);
-                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [(5 , true); 100]") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Incorrect argument count in call [(5 , true); 100]") -> ())
   and b3 = (try ignore (candidate [Int 5; Int 100; Boolean true; Null]);
-                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call [5; 100; true; []]") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Incorrect argument count in call [5; 100; true; []]") -> ())
   (* test for incorrect type of input argument *)
   and b4 = (try ignore (candidate [Pair(Int (-2),
                                         Int 2)]);
-                failwith "Error not raised" with Primitives.Error("Error in even?: (~-2 , 2) is not a number.") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Error in even?: (~-2 , 2) is not a number.") -> ())
   and b5 = (try ignore (candidate [Character 'i']);
-                failwith "Error not raised" with Primitives.Error("Error in even?: 'i' is not a number.") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Error in even?: 'i' is not a number.") -> ())
   and b6 = (try ignore (candidate [Boolean false]);
-                failwith "Error not raised" with Primitives.Error("Error in even?: false is not a number.") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Error in even?: false is not a number.") -> ())
   and b7 = (try ignore (candidate [String "capstone"]);
-                failwith "Error not raised" with Primitives.Error("Error in even?: \"capstone\" is not a number.") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Error in even?: \"capstone\" is not a number.") -> ())
   and b8 = (try ignore (candidate [Null]);
-                failwith "Error not raised" with Primitives.Error("Error in even?: [] is not a number.") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Error in even?: [] is not a number.") -> ())
   and b9 = (try ignore (candidate [Closure identity]);
-                 failwith "Error not raised" with Primitives.Error("Error in even?: Closure function is not a number.") -> ())
+                failwith "Error not raised" with Primitives.Error
+                                                   ("Error in even?: Closure function is not a number.") -> ())
   and b10 = (try ignore (candidate [Primitive internal_add]);
-                 failwith "Error not raised" with Primitives.Error("Error in even?: Primitive function is not a number.") -> ())
+                 failwith "Error not raised" with Primitives.Error
+                                                    ("Error in even?: Primitive function is not a number.") -> ())
   in b0; b1; b2; b3; b4; b5; b6; b7; b8; b9; b10;;
 
 assert(test_internal_is_even internal_is_even);;
