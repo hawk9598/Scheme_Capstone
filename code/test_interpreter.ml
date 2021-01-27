@@ -118,14 +118,14 @@ let test_eval_var candidate =
 
 let test_eval_var_error candidate =
   let b0 = (try ignore (candidate (Var "x") empty_alist);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "x") -> ())
   and b1 = (try ignore (candidate (Var "x") [("y", Int 0);
                                              ("a", String "false")]);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "x") -> ())
   and b2 = (try ignore (candidate (Var "var") [("y", Int 0);
                                                ("a", String "false");
                                                ("variable", Int 1)]);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "var") -> ())
   in b0; b1; b2;;
 
 

@@ -164,7 +164,7 @@ let test_extend_alist_star_error candidate =
   in b0; b1; b2; b3; b4; b5;;
 
 assert (test_extend_alist_star extend_alist_star);; 
-(test_extend_alist_star_error extend_alist_star);; 
+(test_extend_alist_star_error extend_alist_star);;   
 
 (* Testing the lookup function *)
 
@@ -180,20 +180,20 @@ let test_lookup candidate =
 
 let test_lookup_error candidate =
   let b0 = (try ignore (candidate "test" empty_alist);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "test") -> ())
   and b1 = (try ignore (candidate "var" empty_alist);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "var") -> ())
   and b2 = (try ignore (candidate "env" empty_alist);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "env") -> ())
   and b3 = (try ignore (candidate "test" [("x", Int 5);
                                           ("y", Boolean false)]);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "test") -> ())
   and b4 = (try ignore (candidate "var" [("x", Int 5);
                                          ("y", Boolean false)]);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "var") -> ())
   and b5 = (try ignore (candidate "env" [("x", Int 5);
                                          ("y", Boolean false)]);
-                failwith "bad lookup" with Not_found -> ())
+                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "env") -> ())
   in b0; b1; b2; b3; b4; b5;;
 
 assert (test_lookup lookup);;

@@ -3,6 +3,7 @@ open Ast
 open Unparser
 
 exception Error of string
+exception Lookup_not_found of string
                  
 (* Environment *)
 
@@ -95,7 +96,7 @@ let rec lookup (x:name) (c: env) : exp_val =
     match c with
     |[] ->
       (* Add what is not found *)
-      raise Not_found
+      raise (Lookup_not_found x)
     |(y, z) :: c' ->
       if x = y then
         begin
