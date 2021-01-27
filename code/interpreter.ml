@@ -108,25 +108,3 @@ and evlis (exps : exp list)(env : env): exp_val list =
       let v = eval exp env
       in v :: evlis exps' env
   end;;
-
-(*
-eval
-  (Apply
-     ((Lambda_abstraction
-        (Lambda (Args_list ["x"],
-                 Let_rec_unary
-                   (("factorial",
-                     Lambda (Args_list ["x"],
-                             If (Apply (Var "=", [Var "x"; Integer 0]),
-                                 Integer 1,
-                                 Apply (Var "*",
-                                        [Var "x" ;
-                                         Apply (Var "factorial",
-                                                [Apply (Var "-",
-                                                        [Var "x";
-                                                         Integer 1])])])))),
-                    Apply (Var "factorial",
-                           [Var "x"]))))),
-      [Integer 5]))
-  default_empty_alist;;
- *)

@@ -175,8 +175,22 @@ let test_eval_if candidate =
                             Var "z")) [("x", Boolean true);
                                        ("y", String "yes");
                                        ("z", String "no")] = String "yes")
-          
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11;;
+
+let test_eval_if_with_primitives candidate =
+  let b0 = (candidate (If (Apply (Var "=",
+                                  [Integer 5; Integer 0]),
+                           Bool true,
+                           Bool false)) default_empty_alist = Boolean true)
+  and b1 = (candidate (If (Apply (Var "<",
+                                  [Integer 5; Integer 6; Integer 7; Integer 8]),
+                           Integer 0,
+                           Integer 1)) default_empty_alist = Int 0)
+  and b2 = (candidate (If (Apply (Var "string?",
+                                  [Str "5"; Str "a"; Str "hi"]),
+                           Str "yes",
+                           Str "no")) default_empty_alist = String "yes")
+  in b0 && b1 && b2;;
 
 let test_eval_apply candidate =
   let b0 = ((candidate (Apply
@@ -218,7 +232,6 @@ let test_eval_apply candidate =
                                   Var "y"))),
                            [Bool true; Bool false]))
                empty_alist) = Boolean false)
-         
   in b0 && b1 && b2 && b3 && b4;;
 
 let test_eval_apply_error candidate =
@@ -263,6 +276,77 @@ let test_eval_apply_error candidate =
                 failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 5") -> ())
   in b0; b1; b2; b3; b4; b5; b6;;
 
+(* Define the recursive functions we will be using to test let_rec_unary *)
+
+let factorial =
+  (Lambda_abstraction
+     (Lambda (Args_list ["x"],
+              Let_rec_unary
+                (("factorial",
+                  Lambda (Args_list ["x"],
+                          If (Apply (Var "=", [Var "x"; Integer 0]),
+                              Integer 1,
+                              Apply (Var "*",
+                                     [Var "x" ;
+                                      Apply (Var "factorial",
+                                             [Apply (Var "-",
+                                                     [Var "x";
+                                                      Integer 1])])])))),
+                 Apply (Var "factorial",
+                        [Var "x"])))));;
+
+let addition =
+  (Lambda_abstraction
+     (Lambda (Args_list ["n1"; "n2"],
+              Let_rec_unary
+                (("addition",
+                  Lambda(Args_list ["n1"; "n2"],
+                         If (Apply (Var "=", [Var "n1";
+                                              Integer 0]),
+                             Var "n2",
+                             Apply (Var "+",
+                                    [Integer 1;
+                                     Apply (Var "addition",
+                                            [Apply (Var "-",
+                                                    [Var "n1"; Integer 1]);
+                                             Var "n2"])])))),
+                 Apply (Var "addition",
+                        [Var "n1"; Var "n2"])))));;
+                                                     
+(* Testing let_rec_unary *)                         
+  
+let test_eval_let_rec_unary candidate =
+  (* Base case of the factorial function *)
+  let b0 = (candidate (Apply (factorial,
+                              [Integer 0])) default_empty_alist = Int 1)
+  (* Non-base case of the factorial function *)
+  and b1 = (candidate (Apply (factorial,
+                              [Integer 1])) default_empty_alist = Int 1)
+  and b2 = (candidate (Apply (factorial,
+                              [Integer 5])) default_empty_alist = Int 120)
+  and b3 = (candidate (Apply (factorial,
+                              [Integer 9])) default_empty_alist = Int 362880)
+  and b4 = (candidate (Apply (factorial,
+                              [Integer 10])) default_empty_alist = Int 3628800)
+  (* Base case of the addition function, defined recursively *)
+  and b5 = (candidate (Apply (addition,
+                              [Integer 0;
+                               Integer 1000])) default_empty_alist = Int 1000)
+  and b6 = (candidate (Apply (addition,
+                              [Integer 0;
+                               Integer (-5)])) default_empty_alist = Int (-5))
+  (* Non-base case of the addition function *)
+  and b7 = (candidate (Apply (addition,
+                              [Integer 10;
+                               Integer 25])) default_empty_alist = Int 35)
+  and b8 = (candidate (Apply (addition,
+                              [Integer 1000;
+                               Integer 525])) default_empty_alist = Int 1525)
+  and b9 = (candidate (Apply (addition,
+                              [Integer 25;
+                               Integer (-25)])) default_empty_alist = Int 0)
+ in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9;;
+
 assert (test_eval_integer eval);;
 assert (test_eval_integer_non_empty_env eval);;
 assert (test_eval_boolean eval);;
@@ -276,4 +360,4 @@ assert (test_eval_var eval);;
 assert (test_eval_if eval);;
 assert (test_eval_apply eval);;
 (test_eval_apply_error eval);;
-
+assert (test_eval_let_rec_unary eval);;
