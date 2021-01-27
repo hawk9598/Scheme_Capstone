@@ -130,6 +130,8 @@ let rec show_exp_val (v : exp_val): string  =
       "Closure function"
     |Null ->
       "[]"
+    |Recursive_closure _ ->
+      "Recursive closure function"
   end;;
 
 assert (test_show_exp_val show_exp_val);;

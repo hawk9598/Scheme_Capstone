@@ -11,6 +11,7 @@ type exp =
   |If of exp * exp * exp (* If expression *)
   |Let of (name * exp) list * exp (* Let expression *)
   |Let_rec of (name * lambda_abstraction) list * exp (* Let rec expression *)
+  |Let_rec_unary of (name * lambda_abstraction) * exp (* Let rec expression unary *)
   (* |Quote of quotation (* Quote expression *) *)
   |Lambda_abstraction of lambda_abstraction (* Lambda abstraction *)
   |Apply of exp * exp list (* Apply expression *)
@@ -33,9 +34,11 @@ type exp_val =
   |String of string
   |Character of char
   |Pair of exp_val * exp_val (* decide to make pairs immutable for now *)
+  (* Might need to redefine closure type *)
   |Closure of (exp_val list -> exp_val)
   |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
-  |Null (* empty list *) 
+  |Null (* empty list *)
+  |Recursive_closure of (exp_val -> exp_val list -> exp_val)
   
 (* type quotation =
   |Int of int
