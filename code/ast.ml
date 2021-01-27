@@ -34,7 +34,6 @@ type exp_val =
   |String of string
   |Character of char
   |Pair of exp_val * exp_val (* decide to make pairs immutable for now *)
-  (* Might need to redefine closure type *)
   |Closure of (exp_val list -> exp_val)
   |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
   |Null (* empty list *)

@@ -9,61 +9,57 @@ exception Error of string
 (* Define environment as list of arrays based on block *)
                  
 (* Defining the environment as an association list alongside its functions. *)
-
-(* The environment is a list of triplets, with the bool denoting whether the denotation name comes from extend-rec. Used for recursive purposes *)
          
-type env = (name * bool * exp_val) list
+type env = (name * exp_val) list
 
 let empty_alist = []
          
 let default_empty_alist =
-  [ ("pair?", false, Primitive internal_is_pair);
-    ("cons", false, Primitive internal_cons);
-    ("car", false, Primitive internal_car);
-    ("cdr", false, Primitive internal_cdr);
-    ("integer?", false, Primitive internal_is_int);
-    ("zero?", false, Primitive internal_is_zero);
-    ("positive?", false, Primitive internal_is_positive);
-    ("negative?", false, Primitive internal_is_negative);
-    ("even?", false, Primitive internal_is_even);
-    ("odd?", false, Primitive internal_is_odd);
-    ("+", false, Primitive internal_add);
-    ("-", false, Primitive internal_sub);
-    ("*", false, Primitive internal_mul);
-    ("/", false, Primitive internal_div);
-    ("quotient", false, Primitive internal_quotient);
-    ("remainder", false, Primitive internal_remainder);
-    ("expt", false, Primitive internal_exponentiation);
-    ("<", false, Primitive internal_lt);
-    ("<=", false, Primitive internal_lte);
-    (">", false, Primitive internal_gt);
-    (">=", false, Primitive internal_gte);
-    ("=", false, Primitive internal_equal);
-    ("char?", false, Primitive internal_is_char);
-    ("char=?", false, Primitive internal_char_equal);
-    ("char>?", false, Primitive internal_char_gt);
-    ("char>=?", false, Primitive internal_char_ge);
-    ("char<?", false, Primitive internal_char_lt);
-    ("char<=?", false, Primitive internal_char_le);
-    ("char-numeric?", false, Primitive internal_char_numeric);
-    ("char-alphabetic?", false, Primitive internal_char_alphabetic);
-    ("string?", false, Primitive internal_is_str);
-    ("string=?", false, Primitive internal_str_equal);
-    ("string>?", false, Primitive internal_str_gt);
-    ("string>=?", false, Primitive internal_str_ge);
-    ("string<?", false, Primitive internal_str_lt);
-    ("string<=", false, Primitive internal_str_le);
-    ("string-length?", false, Primitive internal_str_length);
-    ("string", false, Primitive internal_char_to_str);
-    ("string-ref", false, Primitive internal_str_ref)
+  [ ("pair?",  Primitive internal_is_pair);
+    ("cons",  Primitive internal_cons);
+    ("car",  Primitive internal_car);
+    ("cdr",  Primitive internal_cdr);
+    ("integer?",  Primitive internal_is_int);
+    ("zero?", Primitive internal_is_zero);
+    ("positive?", Primitive internal_is_positive);
+    ("negative?",  Primitive internal_is_negative);
+    ("even?",  Primitive internal_is_even);
+    ("odd?",  Primitive internal_is_odd);
+    ("+",  Primitive internal_add);
+    ("-",  Primitive internal_sub);
+    ("*", Primitive internal_mul);
+    ("/", Primitive internal_div);
+    ("quotient",  Primitive internal_quotient);
+    ("remainder", Primitive internal_remainder);
+    ("expt",  Primitive internal_exponentiation);
+    ("<", Primitive internal_lt);
+    ("<=",  Primitive internal_lte);
+    (">",  Primitive internal_gt);
+    (">=",  Primitive internal_gte);
+    ("=",  Primitive internal_equal);
+    ("char?", Primitive internal_is_char);
+    ("char=?", Primitive internal_char_equal);
+    ("char>?", Primitive internal_char_gt);
+    ("char>=?", Primitive internal_char_ge);
+    ("char<?", Primitive internal_char_lt);
+    ("char<=?", Primitive internal_char_le);
+    ("char-numeric?", Primitive internal_char_numeric);
+    ("char-alphabetic?", Primitive internal_char_alphabetic);
+    ("string?", Primitive internal_is_str);
+    ("string=?", Primitive internal_str_equal);
+    ("string>?", Primitive internal_str_gt);
+    ("string>=?", Primitive internal_str_ge);
+    ("string<?", Primitive internal_str_lt);
+    ("string<=", Primitive internal_str_le);
+    ("string-length?", Primitive internal_str_length);
+    ("string",  Primitive internal_char_to_str);
+    ("string-ref", Primitive internal_str_ref)
   ]
 
 (* Defining functions that help to extend the environment bindings *)
-
-(* Defining the normal extend functions for non-recursive usage. *)
   
 let extend_alist x d env =
-  (x, false, d) :: env
+  (x,  d) :: env
 
 
 let extend_alist_star xs_given vs_given env =
@@ -88,42 +84,28 @@ let extend_alist_star xs_given vs_given env =
                     (show_list show_string xs_given)
                     (show_list show_exp_val vs_given)))
       |v :: vs' ->
-        (x , false, v) :: visit xs' vs'
+        (x , v) :: visit xs' vs'
       end
   in visit xs_given vs_given;;
 
-(* Defining the extend-rec versions of the above two extend functions *)
-
-
-let extend_rec x d env =
-  (x, true, d) :: env 
-
 (* Defining the Lookup function *)
-
-(* Change definiton of lookup function such that it treats extend-rec stuff differently *)
 
 let rec lookup (x:name) (c: env) : exp_val =
   begin
     match c with
     |[] ->
+      (* Add what is not found *)
       raise Not_found
-    |l :: ls' ->
-      begin
-        match l with
-        |(y, b, z) ->
-          if x = y then
-            if b
-            then
-              begin
-                match z with
-                |Recursive_closure f ->
-                  Closure (f (Recursive_closure f))
-                |_ -> failwith "should not occur."
-              end
-            else
-              z
-          else lookup x ls'
-      end
+    |(y, z) :: c' ->
+      if x = y then
+        begin
+          match z with
+          |Recursive_closure f ->
+            Closure (f (Recursive_closure f))
+          |_ -> z
+        end
+      else
+        lookup x c'
   end
 
     

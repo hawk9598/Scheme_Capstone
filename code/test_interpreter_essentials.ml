@@ -74,9 +74,9 @@ let test_extend_alist candidate =
                                     ("var", String "var");
                                     ("env", Boolean false)])
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9;; 
-(*
+
 assert (test_extend_alist extend_alist);; 
- *)
+
 let test_extend_alist_star candidate =
   let b0 = ((candidate
                ["x"; "y"; "z"]
@@ -163,10 +163,8 @@ let test_extend_alist_star_error candidate =
                   "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
   in b0; b1; b2; b3; b4; b5;;
 
-(*
 assert (test_extend_alist_star extend_alist_star);; 
 (test_extend_alist_star_error extend_alist_star);; 
- *)
 
 (* Testing the lookup function *)
 
@@ -197,7 +195,6 @@ let test_lookup_error candidate =
                                          ("y", Boolean false)]);
                 failwith "bad lookup" with Not_found -> ())
   in b0; b1; b2; b3; b4; b5;;
-(*
+
 assert (test_lookup lookup);;
 (test_lookup_error lookup);;
- *)

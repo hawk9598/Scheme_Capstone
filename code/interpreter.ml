@@ -1,13 +1,10 @@
 (* scheme_interpreter_in_ocaml.ml*)
-(* Capstone AY2020/2021 Sem 1 *)
+(* Capstone AY2020/2021 Sem 2 *)
 (* Qin Wayne Toh  <toh.qin.wayne@u.yale-nus.edu.sg> *)
-(* Version of 23 October 2020 *)
+(* Version of 27 January 2021 *)
 
 (* Defining the syntax of scheme from BNF *)
 
-(* cons, car, cdr, plus, etc as primitive operators. Put lots of things inside the initial environment *)
-
-(* open Primitives *)
 open Ast
 open Unparser
 open Interpreter_essentials 
@@ -15,10 +12,13 @@ open Interpreter_essentials
 exception Error of string
 exception Not_implemented_yet
 
-(* TO DO: Implement call-cc, apply, let, let-rec functions for our interpreter function *)
+(* TO DO: Implement call-cc and apply for our interpreter function *)
         
-(* Defining the evaluation function *)
+(* Defining the evaluation function/ interpreter. *)
+        
 let rec eval (exp : exp) (env: env): exp_val =
+  (* For debugging *)
+  (* Printf.printf "%s\n" (show_exp exp); *)
   begin
     match exp with
     |Integer i ->
@@ -49,18 +49,16 @@ let rec eval (exp : exp) (env: env): exp_val =
           p vs
         |Primitive p ->
           p vs
-        (*|Recursive_closure f ->
-          f (Recursive_closure f) vs*)
+        |Recursive_closure f ->
+          f (Recursive_closure f) vs
         |_ ->
           raise (Error
                    (Printf.sprintf
                       "Not a procedure: %s"
                       (show_exp_val v)))
       end
-    (* Let is just application of lambda desugared, hence not core construct *)
     |Let (_, _) ->
       raise Not_implemented_yet
-    (* Let_rec requires the implementation of extend-rec for local environment. See photo taken for illustration and explanation *)
     |Let_rec (_, _) ->
       raise Not_implemented_yet
     |Let_rec_unary(x, e) ->
@@ -77,7 +75,7 @@ let rec eval (exp : exp) (env: env): exp_val =
           xs
         end
       in
-      eval e (extend_rec
+      eval e (extend_alist
                 name
                 (Recursive_closure
                    (fun closure ->
@@ -112,17 +110,23 @@ and evlis (exps : exp list)(env : env): exp_val list =
   end;;
 
 (*
-
-eval (Apply
- (Lambda_abstraction
-   (Lambda (Args_list ["x"],
-     Let_rec_unary
-      (("factorial",
-        Lambda (Args_list ["x"],
-         If (Apply (Var "=", [Var "x"; Integer 1]), Integer 1,
-          Apply (Var "factorial",
-           [Apply (Var "*", [Var "x"; Apply (Var "-", [Var "x"; Integer 1])])])))),
-      Apply (Var "factorial", [Var "x"])))),
- [Integer 5])) default_empty_alist;;
-
+eval
+  (Apply
+     ((Lambda_abstraction
+        (Lambda (Args_list ["x"],
+                 Let_rec_unary
+                   (("factorial",
+                     Lambda (Args_list ["x"],
+                             If (Apply (Var "=", [Var "x"; Integer 0]),
+                                 Integer 1,
+                                 Apply (Var "*",
+                                        [Var "x" ;
+                                         Apply (Var "factorial",
+                                                [Apply (Var "-",
+                                                        [Var "x";
+                                                         Integer 1])])])))),
+                    Apply (Var "factorial",
+                           [Var "x"]))))),
+      [Integer 5]))
+  default_empty_alist;;
  *)

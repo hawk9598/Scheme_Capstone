@@ -109,6 +109,32 @@ let test_show_exp_val (candidate : exp_val -> string) =
   and b20 = (candidate Null = "[]")
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20;;
 
+let show_exp (v: exp): string =
+  begin
+    match v with
+    |Integer i ->
+      Printf.sprintf "Integer %d" i
+    |Bool b ->
+      Printf.sprintf "Boolean %b" b
+    |Var x ->
+      Printf.sprintf "Var %s" (show_string x)
+    |Str s ->
+      Printf.sprintf "Str %s" (show_string s)
+    |Char c ->
+      Printf.sprintf "Char %s" (show_char c)
+    |If (_) -> 
+      Printf.sprintf "If"
+    |Apply (_) ->
+      Printf.sprintf "Apply"
+    |Let_rec_unary(_) ->
+      Printf.sprintf "Let-rec unary"
+    |Lambda_abstraction (_) ->
+      Printf.sprintf "Lambda"
+    |Let_rec(_) ->
+      Printf.sprintf "Let-rec"
+    |Let(_) ->
+      Printf.sprintf "Let"
+  end
 
 let rec show_exp_val (v : exp_val): string  =
   (* show_exp_val : exp_val -> string *)

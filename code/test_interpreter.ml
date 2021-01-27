@@ -1,6 +1,5 @@
-(* open Primitives *)
 open Ast
-(*open Interpreter*)
+open Interpreter
 open Interpreter_essentials
 
 (* Testing for error: If the correct error is raised, test returns unit meaning that there is no exception raised. *)
@@ -263,7 +262,7 @@ let test_eval_apply_error candidate =
                           empty_alist);
                 failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 5") -> ())
   in b0; b1; b2; b3; b4; b5; b6;;
-(*            
+
 assert (test_eval_integer eval);;
 assert (test_eval_integer_non_empty_env eval);;
 assert (test_eval_boolean eval);;
@@ -277,4 +276,4 @@ assert (test_eval_var eval);;
 assert (test_eval_if eval);;
 assert (test_eval_apply eval);;
 (test_eval_apply_error eval);;
- *)
+
