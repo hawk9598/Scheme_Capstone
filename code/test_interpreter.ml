@@ -295,6 +295,23 @@ let factorial =
                  Apply (Var "factorial",
                         [Var "x"])))));;
 
+let factorial_star =
+  (Lambda_abstraction
+     (Lambda (Args_list ["x"],
+              Let_rec
+                ([("factorial",
+                  Lambda (Args_list ["x"],
+                          If (Apply (Var "=", [Var "x"; Integer 0]),
+                              Integer 1,
+                              Apply (Var "*",
+                                     [Var "x" ;
+                                      Apply (Var_rec ("factorial", 0),
+                                             [Apply (Var "-",
+                                                     [Var "x";
+                                                      Integer 1])])]))))],
+                 Apply (Var_rec ("factorial", 0),
+                        [Var "x"])))));;
+
 let addition =
   (Lambda_abstraction
      (Lambda (Args_list ["n1"; "n2"],

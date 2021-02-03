@@ -4,7 +4,8 @@ open Unparser
 
 exception Error of string
 exception Lookup_not_found of string
-                 
+exception Not_implemented_yet
+        
 (* Environment *)
 
 (* Define environment as list of arrays based on block *)
@@ -90,7 +91,26 @@ let extend_alist_star xs_given vs_given env =
   in visit xs_given vs_given;;
 
 (* Defining the Lookup function *)
-
+let rec lookup_rec (x:name)(i:int)(c:env) : exp_val =
+  begin
+    match c with
+    |[] ->
+      raise(Lookup_not_found x)
+    |(y, z) :: c' ->
+      if x = y then
+        begin
+          match z with
+          |Recursive_closure_non_unary (Recur_star ws)->
+            Closure ((List.nth ws i)(Recur_star ws))
+          (* Define separate error here, we should not hit non-recursive stuff *)
+           
+          |_ -> raise (Lookup_not_found x)
+            
+        end
+      else
+        lookup_rec x i c'
+  end
+  
 let rec lookup (x:name) (c: env) : exp_val =
   begin
     match c with
@@ -105,7 +125,7 @@ let rec lookup (x:name) (c: env) : exp_val =
             Closure (f (Recursive_closure f))
           |_ -> z
         end
-      else
+      else 
         lookup x c'
   end
 

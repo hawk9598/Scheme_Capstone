@@ -8,6 +8,7 @@ type exp =
   |Char of char (* Character *)
   |Str of string (* String *)
   |Var of name (* Variable *) (* Names denoting predefined procedures *)
+  |Var_rec of name * int (* Variable recursive *)
   |If of exp * exp * exp (* If expression *)
   |Let of (name * exp) list * exp (* Let expression *)
   |Let_rec of (name * lambda_abstraction) list * exp (* Let rec expression *)
@@ -28,6 +29,7 @@ type top_level_form =
 type prog =
   |Prog of top_level_form list
 
+(* Self replication is handled because exp_val as a type is recursive in definition. I.e., pair*)
 type exp_val =
   |Int of int
   |Boolean of bool
@@ -38,7 +40,11 @@ type exp_val =
   |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
   |Null (* empty list *)
   |Recursive_closure of (exp_val -> exp_val list -> exp_val)
+  |Recursive_closure_non_unary of recur_star
+and recur_star =
+  |Recur_star of (recur_star -> exp_val list -> exp_val) list
   
+                                    
 (* type quotation =
   |Int of int
   |Boolean of bool

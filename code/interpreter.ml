@@ -27,6 +27,8 @@ let rec eval (exp : exp) (env: env): exp_val =
       Boolean b
     |Var x ->
       lookup x env
+    |Var_rec (x, i) ->
+      lookup_rec x i env
     |Str s ->
       String s
     |Char c ->
@@ -59,8 +61,38 @@ let rec eval (exp : exp) (env: env): exp_val =
       end
     |Let (_, _) ->
       raise Not_implemented_yet
-    |Let_rec (_, _) ->
-      raise Not_implemented_yet
+
+    |Let_rec (xs, e) ->
+      let name_list, lambda_list = List.split xs in
+      let ws = (List.map (fun lambda ->
+                    begin match lambda with
+                    |Lambda(Args_list(lambda_formals), lambda_body)
+                     ->
+                      (fun (Recur_star ws) vs ->
+                        eval
+                          lambda_body
+                          (extend_alist_star
+                             lambda_formals
+                             vs
+                             (extend_alist_star
+                                name_list
+                                (List.init
+                                   (List.length name_list)
+                                   (fun _ ->
+                                     (Recursive_closure_non_unary
+                                        (Recur_star ws))))
+                                env)))
+                    end)
+                  lambda_list)
+      in
+      eval e
+        (extend_alist_star
+           name_list
+           (List.init
+              (List.length name_list)
+              (fun _ -> Recursive_closure_non_unary (Recur_star ws)))
+           env)
+            
     |Let_rec_unary(x, e) ->
       let name, lambda = x in  
       let lambda_args, lambda_body =

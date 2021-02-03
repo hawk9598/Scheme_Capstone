@@ -118,6 +118,8 @@ let show_exp (v: exp): string =
       Printf.sprintf "Boolean %b" b
     |Var x ->
       Printf.sprintf "Var %s" (show_string x)
+    |Var_rec (x, _) ->
+      Printf.sprintf "Var_rec %s" (show_string x)
     |Str s ->
       Printf.sprintf "Str %s" (show_string s)
     |Char c ->
@@ -135,6 +137,7 @@ let show_exp (v: exp): string =
     |Let(_) ->
       Printf.sprintf "Let"
   end
+
 
 let rec show_exp_val (v : exp_val): string  =
   (* show_exp_val : exp_val -> string *)
@@ -158,6 +161,10 @@ let rec show_exp_val (v : exp_val): string  =
       "[]"
     |Recursive_closure _ ->
       "Recursive closure function"
+      
+    |Recursive_closure_non_unary _ ->
+      "Recursive closure (non-unary) function"
+      
   end;;
 
 assert (test_show_exp_val show_exp_val);;
