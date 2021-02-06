@@ -29,7 +29,6 @@ type top_level_form =
 type prog =
   |Prog of top_level_form list
 
-(* Self replication is handled because exp_val as a type is recursive in definition. I.e., pair*)
 type exp_val =
   |Int of int
   |Boolean of bool

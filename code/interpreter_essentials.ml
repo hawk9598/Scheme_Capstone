@@ -5,6 +5,7 @@ open Unparser
 exception Error of string
 exception Lookup_not_found of string
 exception Not_implemented_yet
+exception Unexpected_expression of string
         
 (* Environment *)
 
@@ -102,10 +103,9 @@ let rec lookup_rec (x:name)(i:int)(c:env) : exp_val =
           match z with
           |Recursive_closure_non_unary (Recur_star ws)->
             Closure ((List.nth ws i)(Recur_star ws))
-          (* Define separate error here, we should not hit non-recursive stuff *)
            
-          |_ -> raise (Lookup_not_found x)
-            
+          |_ -> raise (Unexpected_expression (show_exp_val z))
+              
         end
       else
         lookup_rec x i c'
@@ -115,7 +115,6 @@ let rec lookup (x:name) (c: env) : exp_val =
   begin
     match c with
     |[] ->
-      (* Add what is not found *)
       raise (Lookup_not_found x)
     |(y, z) :: c' ->
       if x = y then

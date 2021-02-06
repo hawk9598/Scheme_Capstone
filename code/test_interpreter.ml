@@ -329,7 +329,163 @@ let addition =
                                              Var "n2"])])))),
                  Apply (Var "addition",
                         [Var "n1"; Var "n2"])))));;
-                                                     
+
+let addition_star =
+  (Lambda_abstraction
+     (Lambda (Args_list ["n1"; "n2"],
+              Let_rec
+                ([("addition",
+                  Lambda(Args_list ["n1"; "n2"],
+                         If (Apply (Var "=", [Var "n1";
+                                              Integer 0]),
+                             Var "n2",
+                             Apply (Var "+",
+                                    [Integer 1;
+                                     Apply (Var_rec ("addition", 0),
+                                            [Apply (Var "-",
+                                                    [Var "n1"; Integer 1]);
+                                             Var "n2"])]))))],
+                 Apply (Var_rec ("addition", 0),
+                        [Var "n1"; Var "n2"])))));;
+
+let even_mutual_rec =
+  (Lambda_abstraction
+     (Lambda (Args_list ["x"],
+              Let_rec
+                (["even",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool true,
+                            Apply (Var_rec ("odd", 1),
+                                     [Apply(Var "-",
+                                            [Var "x"; Integer 1])])));
+                 "odd",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("even", 0),
+                                     [Apply(Var "-",
+                                            [Var "x"; Integer 1])])))],
+                 Apply (Var_rec ("even", 0),
+                        [Var "x"])))));;
+let odd_mutual_rec =
+  (Lambda_abstraction
+     (Lambda (Args_list ["x"],
+              Let_rec
+                (["even",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool true,
+                            Apply (Var_rec ("odd", 1),
+                                     [Apply(Var "-",
+                                            [Var "x"; Integer 1])])));
+                 "odd",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("even", 0),
+                                     [Apply(Var "-",
+                                            [Var "x"; Integer 1])])))],
+                 Apply (Var_rec ("odd", 1),
+                        [Var "x"])))));;
+
+let ternary_mutual_rec =
+  (Lambda_abstraction
+     (Lambda (Args_list ["x"],
+              Let_rec
+                (["ternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool true,
+                            Apply (Var_rec ("preternary", 2),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])));
+                  "postternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("ternary", 0),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])));
+                  "preternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("postternary", 1),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])))],
+                 Apply (Var_rec ("ternary", 0),
+                        [Var "x"])))));;
+
+let postternary_mutual_rec =
+  (Lambda_abstraction
+     (Lambda (Args_list ["x"],
+              Let_rec
+                (["ternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool true,
+                            Apply (Var_rec ("preternary", 2),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])));
+                  "postternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("ternary", 0),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])));
+                  "preternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("postternary", 1),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])))],
+                 Apply (Var_rec ("postternary", 1),
+                        [Var "x"])))));;
+
+let preternary_mutual_rec =
+  (Lambda_abstraction
+     (Lambda (Args_list ["x"],
+              Let_rec
+                (["ternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool true,
+                            Apply (Var_rec ("preternary", 2),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])));
+                  "postternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("ternary", 0),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])));
+                  "preternary",
+                  Lambda(Args_list ["x"],
+                         If(Apply (Var "=", [Var "x";
+                                             Integer 0]),
+                            Bool false,
+                            Apply (Var_rec ("postternary", 1),
+                                   [Apply(Var "-",
+                                          [Var "x"; Integer 1])])))],
+                 Apply (Var_rec ("preternary", 2),
+                        [Var "x"])))));;
+
 (* Testing let_rec_unary *)                         
   
 let test_eval_let_rec_unary candidate =
@@ -362,7 +518,166 @@ let test_eval_let_rec_unary candidate =
   and b9 = (candidate (Apply (addition,
                               [Integer 25;
                                Integer (-25)])) default_empty_alist = Int 0)
- in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9;;
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9;;
+
+(* Defining a function that allows us to create repeated, randomized unit tests *)
+ let repeat n_init thunk =
+  assert (n_init >= 0);
+  let rec loop n =
+    if n = 0
+    then true
+    else thunk () && loop (pred n)
+  in loop n_init;;
+
+let test_eval_let_rec candidate =
+  (* Testing for single argument to let_rec *)
+  
+  (* Base case of the factorial function *)
+  let b0 = (candidate (Apply (factorial_star,
+                              [Integer 0])) default_empty_alist = Int 1)
+  (* Non-base case of the factorial function *)
+  and b1 = (candidate (Apply (factorial_star,
+                              [Integer 1])) default_empty_alist = Int 1)
+  and b2 = (candidate (Apply (factorial_star,
+                              [Integer 5])) default_empty_alist = Int 120)
+  and b3 = (candidate (Apply (factorial_star,
+                              [Integer 9])) default_empty_alist = Int 362880)
+  and b4 = (candidate (Apply (factorial_star,
+                              [Integer 10])) default_empty_alist = Int 3628800)
+  (* Base case of the addition function, defined recursively *)
+  and b5 = (candidate (Apply (addition_star,
+                              [Integer 0;
+                               Integer 1000])) default_empty_alist = Int 1000)
+  and b6 = (candidate (Apply (addition_star,
+                              [Integer 0;
+                               Integer (-5)])) default_empty_alist = Int (-5))
+  (* Non-base case of the addition function *)
+  and b7 = (candidate (Apply (addition_star,
+                              [Integer 10;
+                               Integer 25])) default_empty_alist = Int 35)
+  and b8 = (candidate (Apply (addition_star,
+                              [Integer 1000;
+                               Integer 525])) default_empty_alist = Int 1525)
+  and b9 = (candidate (Apply (addition_star,
+                              [Integer 25;
+                               Integer (-25)])) default_empty_alist = Int 0)
+  (* Testing for mutual recursion to let_rec *)
+
+  (* Base case of the even function *)
+  and b10 = (candidate (Apply (even_mutual_rec,
+                               [Integer 0])) default_empty_alist = Boolean true)
+  (* Non-base case of the even function *)
+  and b11 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (even_mutual_rec,
+                                                 [Integer (2 * n)]))
+                                 default_empty_alist = Boolean true)
+                 in result))
+  and b12 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (even_mutual_rec,
+                                                 [Integer (2 * n + 1)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+          
+  (* Base case of the odd function *)
+  and b13  = (candidate (Apply (odd_mutual_rec,
+                                [Integer 0])) default_empty_alist = Boolean false)
+  (* Non-base case of the odd function *)
+  and b14 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (odd_mutual_rec,
+                                                 [Integer (2 * n)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+  and b15 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (odd_mutual_rec,
+                                                 [Integer (2 * n + 1)]))
+                                 default_empty_alist = Boolean true)
+                 in result))
+          
+  (* Base case of the ternary function *)
+  and b16 = (candidate (Apply (ternary_mutual_rec,
+                               [Integer 0])) default_empty_alist = Boolean true)
+  (* Base case of the postternary function *)
+  and b17 = (candidate (Apply (postternary_mutual_rec,
+                               [Integer 0])) default_empty_alist = Boolean false)
+  (* Base case of the preternary function *)
+  and b18 = (candidate (Apply (preternary_mutual_rec,
+                               [Integer 0])) default_empty_alist = Boolean false)
+  (* Non-base case of the 3 mutually recursive functions *)
+
+  (* For the true cases *)
+  and b19 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (ternary_mutual_rec,
+                                                 [Integer (3 * n)]))
+                                 default_empty_alist = Boolean true)
+                 in result))
+  and b20 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (postternary_mutual_rec,
+                                                 [Integer (3 * n + 1)]))
+                                 default_empty_alist = Boolean true)
+                 in result))
+  and b21 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (preternary_mutual_rec,
+                                                 [Integer (3 * n + 2)]))
+                                 default_empty_alist = Boolean true)
+                 in result))
+  (* For the remaining false cases *)
+  and b22 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (ternary_mutual_rec,
+                                                 [Integer (3 * n + 1)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+  and b23 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (postternary_mutual_rec,
+                                                 [Integer (3 * n + 2)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+  and b24 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (preternary_mutual_rec,
+                                                 [Integer (3 * n)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+  and b25 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (ternary_mutual_rec,
+                                                 [Integer (3 * n + 2)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+  and b26 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (postternary_mutual_rec,
+                                                 [Integer (3 * n)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+  and b27 = (repeat 10
+               (fun () ->
+                 let n = Random.int 100 in
+                 let result = (candidate (Apply (preternary_mutual_rec,
+                                                 [Integer (3 * n + 1)]))
+                                 default_empty_alist = Boolean false)
+                 in result))
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20 && b21 && b22 && b23 && b24 && b25 && b26 && b27;;
 
 assert (test_eval_integer eval);;
 assert (test_eval_integer_non_empty_env eval);;
@@ -378,3 +693,4 @@ assert (test_eval_if eval);;
 assert (test_eval_apply eval);;
 (test_eval_apply_error eval);;
 assert (test_eval_let_rec_unary eval);;
+assert (test_eval_let_rec eval);;
