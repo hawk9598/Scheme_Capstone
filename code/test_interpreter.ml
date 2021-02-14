@@ -1,7 +1,8 @@
 open Ast
 open Interpreter
 open Interpreter_essentials
-
+open Unparser
+   
 (* Testing for error: If the correct error is raised, test returns unit meaning that there is no exception raised. *)
    
 exception Not_implemented_yet
@@ -19,7 +20,7 @@ let test_eval_integer candidate =
 
 let test_eval_integer_non_empty_env candidate =
   let b0 = (candidate (Integer 1) [("x", Int 5)]  = Int 1)
-  and b1 = (candidate (Integer 2) [("y", Int 3)] = Int 2)
+  and b1 = (candidate (Integer 2) [("y", Int 3)] = Int 2) 
   and b2 = (candidate (Integer 100) [("x", Boolean true);
                                      ("y", String "env")] = Int 100)
   and b3 = (candidate (Integer (-1)) [("x", Boolean true);
@@ -192,7 +193,7 @@ let test_eval_if_with_primitives candidate =
                            Str "no")) default_empty_alist = String "yes")
   in b0 && b1 && b2;;
 
-let test_eval_apply candidate =
+let test_eval_apply_fixed_arity candidate =
   let b0 = ((candidate (Apply
                           ((Lambda_abstraction
                               (Lambda
@@ -234,6 +235,52 @@ let test_eval_apply candidate =
                empty_alist) = Boolean false)
   in b0 && b1 && b2 && b3 && b4;;
 
+(* Defining functions that operate on Scheme lists for testing variadic lambda abstractions *)
+
+let sum_of_scheme_list =
+  (fun vs ->
+    begin
+      match vs with
+      |v1 :: [] ->    
+        let rec visit v =
+          begin match v with
+          |Null -> 0 
+          |Pair(x, y) ->
+            begin match x with
+            |Int i->
+              i + visit y
+            |_ -> raise (Interpreter_essentials.Error
+                           (Printf.sprintf
+                              "Error in sum_of_scheme_list: Not an int: %s"
+                              (show_exp_val x)))
+            end
+          |_ -> raise (Interpreter_essentials.Error
+                           (Printf.sprintf
+                              "Error in sum_of_scheme_list: Not a Pair or List: %s"
+                              (show_exp_val v)))
+          end
+        in Int (visit v1)
+      |_ -> raise (Interpreter_essentials.Error
+                     (Printf.sprintf
+                        "Error in sum_of_scheme_list: Incorrect argument count in sum_of_scheme_list: %s"
+                        (show_list show_exp_val vs)))
+    end)
+        
+         
+
+let test_eval_apply_variadic candidate =
+  let b0 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args "x",
+                                  Apply (Var "sum_list",
+                                         [Var "x"])))),
+                           [Integer 1; Integer 5; Integer 2]))
+               [("sum_list", Primitive sum_of_scheme_list)]) = Int 8)
+  in b0;;
+                                  
+                                  
+                                  
 let test_eval_apply_error candidate =
   let b0 = (try ignore (candidate (Apply
                               ((If (Integer 1,
@@ -278,23 +325,6 @@ let test_eval_apply_error candidate =
 
 (* Define the recursive functions we will be using to test let_rec_unary *)
 
-let factorial =
-  (Lambda_abstraction
-     (Lambda (Args_list ["x"],
-              Let_rec_unary
-                (("factorial",
-                  Lambda (Args_list ["x"],
-                          If (Apply (Var "=", [Var "x"; Integer 0]),
-                              Integer 1,
-                              Apply (Var "*",
-                                     [Var "x" ;
-                                      Apply (Var "factorial",
-                                             [Apply (Var "-",
-                                                     [Var "x";
-                                                      Integer 1])])])))),
-                 Apply (Var "factorial",
-                        [Var "x"])))));;
-
 let factorial_star =
   (Lambda_abstraction
      (Lambda (Args_list ["x"],
@@ -311,24 +341,6 @@ let factorial_star =
                                                       Integer 1])])]))))],
                  Apply (Var_rec ("factorial", 0),
                         [Var "x"])))));;
-
-let addition =
-  (Lambda_abstraction
-     (Lambda (Args_list ["n1"; "n2"],
-              Let_rec_unary
-                (("addition",
-                  Lambda(Args_list ["n1"; "n2"],
-                         If (Apply (Var "=", [Var "n1";
-                                              Integer 0]),
-                             Var "n2",
-                             Apply (Var "+",
-                                    [Integer 1;
-                                     Apply (Var "addition",
-                                            [Apply (Var "-",
-                                                    [Var "n1"; Integer 1]);
-                                             Var "n2"])])))),
-                 Apply (Var "addition",
-                        [Var "n1"; Var "n2"])))));;
 
 let addition_star =
   (Lambda_abstraction
@@ -486,41 +498,8 @@ let preternary_mutual_rec =
                  Apply (Var_rec ("preternary", 2),
                         [Var "x"])))));;
 
-(* Testing let_rec_unary *)                         
-  
-let test_eval_let_rec_unary candidate =
-  (* Base case of the factorial function *)
-  let b0 = (candidate (Apply (factorial,
-                              [Integer 0])) default_empty_alist = Int 1)
-  (* Non-base case of the factorial function *)
-  and b1 = (candidate (Apply (factorial,
-                              [Integer 1])) default_empty_alist = Int 1)
-  and b2 = (candidate (Apply (factorial,
-                              [Integer 5])) default_empty_alist = Int 120)
-  and b3 = (candidate (Apply (factorial,
-                              [Integer 9])) default_empty_alist = Int 362880)
-  and b4 = (candidate (Apply (factorial,
-                              [Integer 10])) default_empty_alist = Int 3628800)
-  (* Base case of the addition function, defined recursively *)
-  and b5 = (candidate (Apply (addition,
-                              [Integer 0;
-                               Integer 1000])) default_empty_alist = Int 1000)
-  and b6 = (candidate (Apply (addition,
-                              [Integer 0;
-                               Integer (-5)])) default_empty_alist = Int (-5))
-  (* Non-base case of the addition function *)
-  and b7 = (candidate (Apply (addition,
-                              [Integer 10;
-                               Integer 25])) default_empty_alist = Int 35)
-  and b8 = (candidate (Apply (addition,
-                              [Integer 1000;
-                               Integer 525])) default_empty_alist = Int 1525)
-  and b9 = (candidate (Apply (addition,
-                              [Integer 25;
-                               Integer (-25)])) default_empty_alist = Int 0)
-  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9;;
-
 (* Defining a function that allows us to create repeated, randomized unit tests *)
+
  let repeat n_init thunk =
   assert (n_init >= 0);
   let rec loop n =
@@ -690,7 +669,7 @@ assert (test_eval_char_non_empty_env eval);;
 assert (test_eval_var eval);;
 (test_eval_var_error eval);; 
 assert (test_eval_if eval);;
-assert (test_eval_apply eval);;
+assert (test_eval_apply_fixed_arity eval);;
+assert (test_eval_apply_variadic eval);;
 (test_eval_apply_error eval);;
-assert (test_eval_let_rec_unary eval);;
 assert (test_eval_let_rec eval);;

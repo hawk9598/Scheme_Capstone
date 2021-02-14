@@ -38,12 +38,14 @@ type exp_val =
   |String of string
   |Character of char
   |Pair of exp_val * exp_val (* decide to make pairs immutable for now *)
-  |Closure of (exp_val list -> exp_val)
+  |Closure of (exp_val list -> (exp_val -> exp_val) -> exp_val)
   |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
+  |APPLY
+  |CCC
   |Null (* empty list *)
   |Recursive_closure of recur_star
 and recur_star =
-  |Recur_star of (recur_star -> exp_val list -> exp_val) list
+  |Recur_star of (recur_star -> exp_val list -> (exp_val -> exp_val) -> exp_val) list
   
                                     
 (* type quotation =
@@ -53,4 +55,4 @@ and recur_star =
   |Character of char
   |Null
   |Pair of exp_val * exp_val (* but quoted pairs are NOT mutable *) 
-  |Cmpd_Quotation of quotation * quotation *) 
+  |Cmpd_Quotation of quotation * quotation *)

@@ -1,5 +1,5 @@
-open Ast
-open Interpreter_essentials
+open Ast_cps
+open Interpreter_essentials_cps
 
 exception Not_implemented_yet
                  
@@ -129,37 +129,37 @@ let test_extend_alist_star_error candidate =
                           [Int 5; Int 6; Int 9]
                           empty_alist);
                 failwith
-                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 9]") -> ())
+                  "Error not occurring" with Interpreter_essentials_cps.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 9]") -> ())
   and b1 = (try ignore (candidate
                           ["x"; "y"; "z"]
                           [Int 5; Character 'c']
                           empty_alist);
                 failwith
-                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
+                  "Error not occurring" with Interpreter_essentials_cps.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
   and b2 = (try ignore (candidate
                           ["x"; "y"]
                           [Int 5; Int 6; Int 7; Int 8]
                           empty_alist);
                 failwith
-                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7; 8]") -> ())
+                  "Error not occurring" with Interpreter_essentials_cps.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7; 8]") -> ())
   and b3 = (try ignore (candidate
                           ["x"; "y"; "z"; "var"]
                           [Int 5; Character 'c']
                           empty_alist);
                 failwith
-                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"; \"var\"]  [5; 'c']") -> ())
+                  "Error not occurring" with Interpreter_essentials_cps.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"; \"var\"]  [5; 'c']") -> ())
   and b4 = (try ignore (candidate
                           ["x"; "y"]
                           [Int 5; Int 6; Int 7]
                           prepopulated_env);
                 failwith
-                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7]") -> ())
+                  "Error not occurring" with Interpreter_essentials_cps.Error ("Arity mismatch, [\"x\"; \"y\"]  [5; 6; 7]") -> ())
   and b5 = (try ignore (candidate
                           ["x"; "y"; "z"]
                           [Int 5; Character 'c']
                           prepopulated_env);
                 failwith
-                  "Error not occurring" with Interpreter_essentials.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
+                  "Error not occurring" with Interpreter_essentials_cps.Error ("Arity mismatch,  [\"x\"; \"y\"; \"z\"]  [5; 'c']") -> ())
   in b0; b1; b2; b3; b4; b5;;
 
 assert (test_extend_alist_star extend_alist_star);; 
@@ -179,20 +179,20 @@ let test_lookup candidate =
 
 let test_lookup_error candidate =
   let b0 = (try ignore (candidate "test" empty_alist);
-                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "test") -> ())
+                failwith "bad lookup" with (Interpreter_essentials_cps.Lookup_not_found "test") -> ())
   and b1 = (try ignore (candidate "var" empty_alist);
-                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "var") -> ())
+                failwith "bad lookup" with (Interpreter_essentials_cps.Lookup_not_found "var") -> ())
   and b2 = (try ignore (candidate "env" empty_alist);
-                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "env") -> ())
+                failwith "bad lookup" with (Interpreter_essentials_cps.Lookup_not_found "env") -> ())
   and b3 = (try ignore (candidate "test" [("x", Int 5);
                                           ("y", Boolean false)]);
-                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "test") -> ())
+                failwith "bad lookup" with (Interpreter_essentials_cps.Lookup_not_found "test") -> ())
   and b4 = (try ignore (candidate "var" [("x", Int 5);
                                          ("y", Boolean false)]);
-                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "var") -> ())
+                failwith "bad lookup" with (Interpreter_essentials_cps.Lookup_not_found "var") -> ())
   and b5 = (try ignore (candidate "env" [("x", Int 5);
                                          ("y", Boolean false)]);
-                failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "env") -> ())
+                failwith "bad lookup" with (Interpreter_essentials_cps.Lookup_not_found "env") -> ())
   in b0; b1; b2; b3; b4; b5;;
 
 assert (test_lookup lookup);;

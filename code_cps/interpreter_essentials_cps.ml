@@ -1,6 +1,6 @@
-open Unparser
-open Ast
-open Primitives
+open Unparser_cps
+open Ast_cps
+open Primitives_cps
 
 exception Error of string
 exception Lookup_not_found of string
@@ -20,8 +20,7 @@ type env = (name * exp_val) list
 let empty_alist = []
                 
 let default_empty_alist =
-  [ ("apply", Primitive internal_apply);
-    ("pair?",  Primitive internal_is_pair);
+  [ ("pair?",  Primitive internal_is_pair);
     ("cons",  Primitive internal_cons);
     ("car",  Primitive internal_car);
     ("cdr",  Primitive internal_cdr);
@@ -39,7 +38,7 @@ let default_empty_alist =
     ("remainder", Primitive internal_remainder);
     ("expt",  Primitive internal_exponentiation);
     ("<", Primitive internal_lt);
-    ("<=",  Primitive internal_lte);
+    ("<=",  Primitive internal_lte); 
     (">",  Primitive internal_gt);
     (">=",  Primitive internal_gte);
     ("=",  Primitive internal_equal);

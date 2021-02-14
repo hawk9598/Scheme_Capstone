@@ -1,4 +1,4 @@
-open Ast
+open Ast_cps
    
 exception Error of string   
    
@@ -102,18 +102,30 @@ let show_exp v =
 (* Defining the unparsers for exp_val *)
 
 let identity =
-  fun vs ->
+  fun vs k ->
   (begin
       match vs with
-      |v :: [] -> v
+      |v :: [] -> k v
       |_ ->
         raise
           (Error
              (Printf.sprintf
-                "Incorrect argument count in call to identity"))
+                "Should not occur, used for testing only."))
+    end)
+
+let internal_cons =
+  (fun vs ->
+    begin
+      match vs with
+      |v1 :: v2 :: [] ->
+        Pair (v1, v2)
+      |_ ->
+        raise (Error
+                 (Printf.sprintf
+                    "Should not occur, used for testing only."))
     end)
   
-let test_show_exp_val candidate =
+let test_show_exp_val candidate  =
   let b0 = (candidate (Int 5) = "5")
   and b1 = (candidate (Int (-5)) = "~-5")
   and b2 = (candidate (Boolean true) = "true")
@@ -129,17 +141,18 @@ let test_show_exp_val candidate =
   and b12 = (candidate (Pair (Character 'n', Character 'a')) = "('n' , 'a')")
   and b13 = (candidate (Pair (Pair (Int 6, Int 9), Pair(Boolean true, Boolean false))) = "((6 , 9) , (true , false))")
   and b14 = (candidate (Pair (Character 'c', Pair (String "hello", String "world"))) = "('c' , (\"hello\" , \"world\"))")
-  and b15 = (candidate (Pair (Primitive identity,
-                              Primitive identity)) = "(Primitive function , Primitive function)")
+  and b15 = (candidate (Pair (Primitive internal_cons,
+                              Primitive internal_cons)) = "(Primitive function , Primitive function)")
   and b16 = (candidate (Pair (Closure identity,
                               Closure identity)) = "(Closure function , Closure function)")
   and b17 = (candidate (Pair(Null, Null)) = "([] , [])")
-  and b18 = (candidate (Primitive identity) = "Primitive function")
+  and b18 = (candidate (Primitive internal_cons) = "Primitive function")
   and b19 = (candidate (Closure identity) = "Closure function")
   and b20 = (candidate Null = "[]")
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20;;
 
-let rec show_exp_val v  =
+
+let rec show_exp_val v =
   (* show_exp_val : exp_val -> string *)
   begin
     match v with
@@ -161,10 +174,14 @@ let rec show_exp_val v  =
       "[]"
     |Recursive_closure _ ->
       "Recursive closure function"
+    |APPLY ->
+      "Special Value Apply."
+    |CCC ->
+      "Call with Current Continuation."
       
   end;;
 
-assert (test_show_exp_val show_exp_val);;
+ assert (test_show_exp_val show_exp_val);;
 
 let test_show_list_of_exp_val candidate =
   (* test for list of exp_val with only 0 or 1 argument *)
@@ -175,7 +192,7 @@ let test_show_list_of_exp_val candidate =
   and b4 = (candidate show_exp_val [Pair(Character 'a',
                                          String "his")] = "[('a' , \"his\")]")
   and b5 = (candidate show_exp_val [Closure identity] = "[Closure function]")
-  and b6 = (candidate show_exp_val [Primitive identity] = "[Primitive function]")
+  and b6 = (candidate show_exp_val [Primitive internal_cons] = "[Primitive function]")
   and b7 = (candidate show_exp_val [Null] = "[[]]")
   and b8 = (candidate show_exp_val [] = "[]")
   (* test for multiple arguments in list of exp_val *)
@@ -187,7 +204,7 @@ let test_show_list_of_exp_val candidate =
   and b12 = (candidate show_exp_val [Pair(Int 5,
                                           Character '5'); Null; Closure identity]
              = "[(5 , '5'); []; Closure function]")
-  and b13 = (candidate show_exp_val [Int (-100); Primitive identity; Boolean true;
+  and b13 = (candidate show_exp_val [Int (-100); Primitive internal_cons; Boolean true;
                                      Pair(Null,
                                           String "hi")]
              = "[~-100; Primitive function; true; ([] , \"hi\")]")
