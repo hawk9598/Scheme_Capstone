@@ -8,6 +8,8 @@ open Unparser
 exception Not_implemented_yet
 
 (* Testing the eval function *)
+
+(* Defining unit tests for the integer type expression *)
 let test_eval_integer candidate =
   let b0 = (candidate (Integer 1) empty_alist = Int 1)
   and b1 = (candidate (Integer 2) empty_alist = Int 2)
@@ -33,6 +35,7 @@ let test_eval_integer_non_empty_env candidate =
                                    ("y", String "env")] = Int 0)
   in b0 && b1 && b2 && b3 && b4 && b5 && b6;;
 
+(* Defining unit tests for the boolean type expression *)
 let test_eval_boolean candidate =
   let b0 = (candidate (Bool true) empty_alist = Boolean true)
   and b1 = (candidate (Bool false) empty_alist = Boolean false)
@@ -45,6 +48,7 @@ let test_eval_boolean_non_empty_env candidate =
                                     ("y", String "env")] = Boolean false)
   in b0 && b1;;
 
+(* Defining unit tests for the string type expression *)
 let test_eval_string candidate =
   let b0 = (candidate (Str "hello") empty_alist = String "hello")
   and b1 = (candidate (Str "world") empty_alist = String "world")
@@ -66,6 +70,7 @@ let test_eval_string_non_empty_env candidate =
                                            ("y", String "env")] = String "Scheme 2020")
   in b0 && b1 && b2 && b3 && b4;;
 
+(* Defining unit tests for the character type expression *)
 let test_eval_char candidate =
   let b0 = (candidate (Char 'c') empty_alist = Character 'c')
   and b1 = (candidate (Char 'd') empty_alist = Character 'd')
@@ -87,6 +92,7 @@ let test_eval_char_non_empty_env candidate =
                                   ("y", String "env")]  = Character '9')
   in b0 && b1 && b2 && b3 && b4;;
 
+(* Defining unit tests for the variable type expression *)
 let test_eval_var candidate =
   let b0 = (candidate (Var "x") [("x", Int 6)] = Int 6)
   and b1 = (candidate (Var "x")[("x", Character 'a')] = Character 'a')
@@ -129,7 +135,7 @@ let test_eval_var_error candidate =
                 failwith "bad lookup" with (Interpreter_essentials.Lookup_not_found "var") -> ())
   in b0; b1; b2;;
 
-
+(* Defining unit tests for the if type expression *)
 let test_eval_if candidate =
   (* If predicate is Boolean true *)
   let b0 = (candidate (If (Bool true,
@@ -193,6 +199,7 @@ let test_eval_if_with_primitives candidate =
                            Str "no")) default_empty_alist = String "yes")
   in b0 && b1 && b2;;
 
+(* Defining unit tests for the apply and different types of lambda abstractions *)
 let test_eval_apply_fixed_arity candidate =
   let b0 = ((candidate (Apply
                           ((Lambda_abstraction
@@ -236,7 +243,6 @@ let test_eval_apply_fixed_arity candidate =
   in b0 && b1 && b2 && b3 && b4;;
 
 (* Defining functions that operate on Scheme lists for testing variadic lambda abstractions *)
-
 let sum_of_scheme_list =
   (fun vs ->
     begin
@@ -265,9 +271,8 @@ let sum_of_scheme_list =
                         "Error in sum_of_scheme_list: Incorrect argument count in sum_of_scheme_list: %s"
                         (show_list show_exp_val vs)))
     end)
-        
-         
 
+         
 let test_eval_apply_variadic candidate =
   let b0 = ((candidate (Apply
                           ((Lambda_abstraction
@@ -275,10 +280,57 @@ let test_eval_apply_variadic candidate =
                                  (Args "x",
                                   Apply (Var "sum_list",
                                          [Var "x"])))),
-                           [Integer 1; Integer 5; Integer 2]))
-               [("sum_list", Primitive sum_of_scheme_list)]) = Int 8)
+                           [Integer 1]))
+               [("sum_list", Primitive sum_of_scheme_list)]) = Int 1)
+  and b1 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args "x",
+                                  Apply (Var "sum_list",
+                                         [Var "x"])))),
+                           [Integer 5; Integer 10; Integer 1000; Integer (-200); Integer (-10)]))
+               [("sum_list", Primitive sum_of_scheme_list)]) = Int 805)
+  and b2 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args "x",
+                                  Apply (Var "car",
+                                         [Var "x"])))),
+                           [Str "car"; Integer 10; Char 'c']))
+               default_empty_alist) = String "car")
+  and b3 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args "x",
+                                  Apply (Var "cdr",
+                                         [Var "x"])))),
+                           [Integer 10; Str "cdr"; Bool true]))
+               default_empty_alist) = Pair(String "cdr",
+                                     Pair(Boolean true,
+                                          Null)))
+  and b4 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args "x",
+                                  Apply (Var "pair?",
+                                         [Var "x"])))),
+                           [Integer 10; Bool true; Char 'c']))
+               default_empty_alist) = Boolean true)
+         
+         
+  in b0 && b1 && b2 && b3 && b4;;
+
+let test_eval_apply_improper candidate =
+  let b0 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args_improper_list (["x"; "y"; "z"], "args"),
+                                  Apply (Var "+",
+                                         [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
+                                                                             [Var "args"]))])))),
+                           [Integer 10; Integer 100; Integer (-20); Integer (-10); Str "not_an_int"]))
+               default_empty_alist) = Int 80)
   in b0;;
-                                  
                                   
                                   
 let test_eval_apply_error candidate =
@@ -323,8 +375,16 @@ let test_eval_apply_error candidate =
                 failwith "Error not occurring" with Interpreter.Error ("Not a procedure: 5") -> ())
   in b0; b1; b2; b3; b4; b5; b6;;
 
-(* Define the recursive functions we will be using to test let_rec_unary *)
+(* Defining the unit tests for the let expression*)
+let test_eval_let candidate =
+  let b0 = ((candidate (Let ([("x", Integer 5);
+                              ("y", Integer 7)],
+                             Apply(Var "+",
+                                   [Var "x"; Var "y"])))
+               default_empty_alist) = Int 12)
+  in b0;;
 
+(* Define the recursive functions we will be using to test let_rec_unary *)
 let factorial_star =
   (Lambda_abstraction
      (Lambda (Args_list ["x"],
@@ -508,6 +568,7 @@ let preternary_mutual_rec =
     else thunk () && loop (pred n)
   in loop n_init;;
 
+(* Defining unit test for the let_rec expression *)
 let test_eval_let_rec candidate =
   (* Testing for single argument to let_rec *)
   
@@ -658,6 +719,7 @@ let test_eval_let_rec candidate =
                  in result))
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20 && b21 && b22 && b23 && b24 && b25 && b26 && b27;;
 
+(* Run the tests. *)
 assert (test_eval_integer eval);;
 assert (test_eval_integer_non_empty_env eval);;
 assert (test_eval_boolean eval);;
@@ -671,5 +733,7 @@ assert (test_eval_var eval);;
 assert (test_eval_if eval);;
 assert (test_eval_apply_fixed_arity eval);;
 assert (test_eval_apply_variadic eval);;
+assert (test_eval_apply_improper eval);;
 (test_eval_apply_error eval);;
+assert (test_eval_let eval);;
 assert (test_eval_let_rec eval);;
