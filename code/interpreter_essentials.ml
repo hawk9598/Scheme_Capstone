@@ -136,17 +136,18 @@ let rec aux_map_ocaml_list_to_scheme_proper_list vs =
   end
 
 (* vs is the arguments, xs is the formal names *)
-  
-let rec aux_map_ocaml_list_to_scheme_improper_list vs xs =
-  begin
-    match vs, xs with
-    |vs, [] -> ([], aux_map_ocaml_list_to_scheme_proper_list vs)
-    |v :: vs', _ :: xs' ->
-      let (a, b) = aux_map_ocaml_list_to_scheme_improper_list vs' xs' in
-      (v :: a, b) 
-    |[], xs ->
-      raise (Error
-               (Printf.sprintf
-                  "Error in variadic application: Not enough actual parameters for %s"
-                  (show_list show_string xs)))
-  end
+let aux_map_ocaml_list_to_scheme_improper_list vs1 xs1 =
+  let rec visit vs xs  =
+    begin
+      match vs, xs with
+      |vs, [] -> ([], aux_map_ocaml_list_to_scheme_proper_list vs)
+      |v :: vs', _ :: xs' ->
+        let (a, b) = visit vs' xs' in
+        (v :: a, b) 
+      |[], _ ->
+        raise (Error
+                 (Printf.sprintf
+                    "Error in variadic application: Not enough actual parameters for %s"
+                    (show_list show_string xs1)))
+    end
+  in visit vs1 xs1

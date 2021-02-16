@@ -1,6 +1,6 @@
 open Ast
 open Interpreter_essentials
-
+   
 exception Not_implemented_yet
                  
 (* Testing the environment and its pre-defined functions *)
@@ -197,3 +197,68 @@ let test_lookup_error candidate =
 
 assert (test_lookup lookup);;
 (test_lookup_error lookup);;
+
+let test_aux_map_ocaml_list_to_scheme_proper_list candidate =
+  (* Test base case *)
+  let b0 = (candidate [] = Null)
+  (* Test for non base case *)
+  and b1 = (candidate [Int 100] = Pair (Int 100,
+                                        Null))
+  and b2 = (candidate [Int 100; Boolean true; String "scheme"; Character 'l']
+            = Pair (Int 100,
+                    Pair (Boolean true,
+                          Pair (String "scheme",
+                                Pair (Character 'l',
+                                      Null)))))
+  and b3 = (candidate [Int 100; Boolean true; Pair (String "nested",
+                                                     Null); String "list"]
+            = Pair (Int 100,
+                    Pair (Boolean true,
+                          Pair (Pair (String "nested",
+                                      Null),
+                                Pair (String "list",
+                                      Null)))))
+  and b4 = (candidate [String "yes"; Int 100; Boolean false; Character 'n']
+            =  Pair (String "yes",
+                     Pair (Int 100,
+                           Pair (Boolean false,
+                                 Pair (Character 'n',
+                                       Null)))))
+  in b0 && b1 && b2 && b3 && b4;;
+
+assert (test_aux_map_ocaml_list_to_scheme_proper_list aux_map_ocaml_list_to_scheme_proper_list);;
+
+let test_aux_map_ocaml_list_to_scheme_improper_list candidate =
+  let b0 = (candidate [Int 100] [] = ([], Pair(Int 100,
+                                               Null)))
+  and b1 = (candidate [Int 100; Int 200; Int 300; Int 400] ["x"; "y"]
+            = ([Int 100; Int 200], Pair (Int 300,
+                                         Pair (Int 400,
+                                               Null))))
+  and b2 = (candidate [Int 1000; Boolean false; String "true"; Character 'n']["int"; "bool"]
+            = ([Int 1000; Boolean false], Pair (String "true",
+                                                Pair (Character 'n',
+                                                      Null))))
+  and b3 = (candidate [Int 5; Int 10; Boolean true; Boolean false; String "short"]["five"]
+            = ([Int 5], Pair (Int 10,
+                              Pair (Boolean true,
+                                    Pair (Boolean false,
+                                          Pair (String "short",
+                                                Null))))))
+  in b0 && b1 && b2 && b3;;
+
+assert (test_aux_map_ocaml_list_to_scheme_improper_list aux_map_ocaml_list_to_scheme_improper_list);;
+
+let test_aux_map_ocaml_list_to_scheme_improper_list_error candidate =
+  let b0 = (try ignore (candidate [Int 100]["x"; "y"]);
+                failwith
+                  "Error not occurring" with Interpreter_essentials.Error ("Error in variadic application: Not enough actual parameters for [\"x\"; \"y\"]") -> ())
+  and b1 = (try ignore (candidate [Int 100; Boolean true]["x"; "y"; "z"]);
+                failwith
+                  "Error not occurring" with Interpreter_essentials.Error ("Error in variadic application: Not enough actual parameters for [\"x\"; \"y\"; \"z\"]") -> ())
+  and b2 = (try ignore (candidate []["x"]);
+                failwith
+                  "Error not occurring" with Interpreter_essentials.Error ("Error in variadic application: Not enough actual parameters for [\"x\"]") -> ())
+  in b0 ; b1 ; b2;;
+
+(test_aux_map_ocaml_list_to_scheme_improper_list_error aux_map_ocaml_list_to_scheme_improper_list);;

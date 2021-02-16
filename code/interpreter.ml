@@ -1,11 +1,11 @@
-(* scheme_interpreter_in_ocaml.ml*)
+(* interpreter.ml*)
 (* Capstone AY2020/2021 Sem 2 *)
 (* Qin Wayne Toh  <toh.qin.wayne@u.yale-nus.edu.sg> *)
-(* Version of 6 February 2021 *)
+(* Version of 16 February 2021 *)
 
 (* Defining the syntax of scheme from BNF *)
 
-(* To do: 1) Implement call-cc, 2) Finish draft on recursion *)
+(* To do: 1) Finish draft on recursion *)
 
 open Ast
 open Interpreter_essentials 

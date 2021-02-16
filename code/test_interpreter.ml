@@ -2,6 +2,8 @@ open Ast
 open Interpreter
 open Interpreter_essentials
 open Unparser
+
+(* TO ADD: Tests that test for lambda abstraction that is variadic and mixed for let rec expression. *)
    
 (* Testing for error: If the correct error is raised, test returns unit meaning that there is no exception raised. *)
    
@@ -316,9 +318,18 @@ let test_eval_apply_variadic candidate =
                                          [Var "x"])))),
                            [Integer 10; Bool true; Char 'c']))
                default_empty_alist) = Boolean true)
+  and b5 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args "x",
+                                  Apply (Var "car",
+                                         [Apply (Var "cdr",
+                                                 [Var "x"])])))),
+                           [Integer 10; Str "me"; Bool true; Char 'y']))
+               default_empty_alist) = String "me")
          
          
-  in b0 && b1 && b2 && b3 && b4;;
+  in b0 && b1 && b2 && b3 && b4 && b5;;
 
 let test_eval_apply_improper candidate =
   let b0 = ((candidate (Apply
@@ -330,7 +341,37 @@ let test_eval_apply_improper candidate =
                                                                              [Var "args"]))])))),
                            [Integer 10; Integer 100; Integer (-20); Integer (-10); Str "not_an_int"]))
                default_empty_alist) = Int 80)
-  in b0;;
+  and b1 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args_improper_list (["x"; "y"; "z"], "args"),
+                                  Apply (Var "+",
+                                         [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
+                                                                             [Var "args"]))])))),
+                           [Integer 10; Integer 100; Integer (-20); Integer (-20); Integer 20; Str "not_an_int"]))
+               default_empty_alist) = Int 70)
+  and b2 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args_improper_list (["x"; "y"; "z"], "args"),
+                                  Apply (Var "+",
+                                         [Var "x"; Var "y"; Var "z"])))),
+                           [Integer 10; Integer 20; Integer 30]))
+               default_empty_alist) = Int 60)
+  and b3 = ((candidate (Apply
+                          ((Lambda_abstraction
+                              (Lambda
+                                 (Args_improper_list (["x"; "y"; "z"], "args"),
+                                  Apply (Var "+",
+                                         [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
+                                                                      [Var "args"]));
+                                          (Apply (Var "car",
+                                                  [Apply (Var "cdr",
+                                                          [Var "args"])]))])))),
+                             [Integer (-10); Integer (-20); Integer 100; Integer 10; Integer 20; Integer 1000]))
+              default_empty_alist) = Int 100)
+  in b0 && b1 && b2 && b3;;
+
                                   
                                   
 let test_eval_apply_error candidate =
@@ -382,9 +423,35 @@ let test_eval_let candidate =
                              Apply(Var "+",
                                    [Var "x"; Var "y"])))
                default_empty_alist) = Int 12)
-  in b0;;
+  and b1 = ((candidate (Let ([("x", Bool true);
+                              ("y", Bool false)],
+                             If (Var "x",
+                                 Str "true",
+                                 Var "y")))
+               default_empty_alist) = String "true")
+                             
+  (* Testing whether local definitions of functions work *)
+  and b2 = ((candidate (Let ([("is_more_than_hundred?",
+                               Lambda_abstraction
+                                 (Lambda
+                                    (Args_list ["x"],
+                                     If (Apply (Var ">",
+                                                [Var "x"; Integer 100]),
+                                         Bool true,
+                                         Bool false))));
+                              ("small_number", Integer 1);
+                              ("big_number", Integer 1000)],
+                             If (Apply (Var "=",
+                                        [Integer 5; Integer 5; Integer 5]),
+                                 Apply (Var "is_more_than_hundred?",
+                                        [Var "small_number"]),
+                                 Apply (Var "is_more_than_hundred?",
+                                        [Var "big_number"]))))
+               default_empty_alist) = Boolean false)
+             
+  in b0 && b1 && b2;;
 
-(* Define the recursive functions we will be using to test let_rec_unary *)
+(* Define the recursive functions we will be using to test let_rec *)
 let factorial_star =
   (Lambda_abstraction
      (Lambda (Args_list ["x"],
