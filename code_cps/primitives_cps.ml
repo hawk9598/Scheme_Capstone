@@ -1,11 +1,54 @@
-(* Define the primitive functions with PROPER error messages at top level. *)
-(* Change %s to be at the right side instead for some of the error messages below *)
-
 open Unparser_cps
 open Ast_cps
 
 exception Error of string
 
+(* Defining the apply procedure *)
+
+(* Maps a scheme value into an OCaml list of scheme values. *)
+let rec aux_map_scheme_proper_list_to_ocaml_list v =
+  begin
+    match v with
+    |Null -> []
+    |Pair(v1, v2s) ->
+      v1 :: aux_map_scheme_proper_list_to_ocaml_list v2s
+    |_ ->
+      raise (Error
+               (Printf.sprintf 
+                    "Error in apply: Not a proper list: %s"
+                    (show_exp_val v)))
+  end
+
+(* 
+
+(* Internal apply function that can be used on variadic arguments *)
+let internal_apply =
+  (fun vs ->
+    begin
+      match vs with
+      |v1 :: v2 :: [] ->
+        let vs = aux_map_scheme_proper_list_to_ocaml_list v2 in
+        begin
+          match v1 with
+          |Closure p ->
+            p vs
+          |Primitive p ->
+            p vs
+          |_ ->
+            raise (Error
+                     (Printf.sprintf
+                        "Error in apply: Not a procedure: %s"
+                        (show_exp_val v1)))
+        end
+      |_ ->
+        raise (Error
+                 (Printf.sprintf 
+                    "Incorrect argument count in call (apply %s)"
+                    (show_list show_exp_val vs)))
+    end)
+
+ *)
+  
 (* Defining internal functions for pairs and lists *)
                  
 let internal_is_pair =
@@ -23,7 +66,7 @@ let internal_is_pair =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (pair? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -36,7 +79,7 @@ let internal_cons =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (cons %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -113,7 +156,7 @@ let internal_car =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (car %s)"
                     (show_list show_exp_val vs)))
     end)
   
@@ -136,7 +179,7 @@ let internal_cdr =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (cdr %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -157,7 +200,7 @@ let internal_is_int =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (integer? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -182,7 +225,7 @@ let internal_is_zero =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (zero? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -207,7 +250,7 @@ let internal_is_positive =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (positive? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -232,7 +275,7 @@ let internal_is_negative =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (negative? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -257,7 +300,7 @@ let internal_is_even =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (even? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -282,7 +325,7 @@ let internal_is_odd =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (odd? %s)"
                     (show_list show_exp_val vs)))
     end)  
   
@@ -314,7 +357,7 @@ let internal_sub =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (- %s)"
                     (show_list show_exp_val vs)))
       |v :: [] ->
         begin
@@ -383,7 +426,7 @@ let internal_div =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (/ %s)"
                     (show_list show_exp_val vs)))
       |v :: [] ->
         begin
@@ -463,7 +506,7 @@ let internal_quotient =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (quotient %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -499,7 +542,7 @@ let internal_remainder =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (remainder %s)"
                     (show_list show_exp_val vs)))
     end)
   
@@ -545,7 +588,7 @@ let internal_exponentiation =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (expt %s)"
                     (show_list show_exp_val vs)))
     end)
           
@@ -557,7 +600,7 @@ let internal_lt =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (< %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin match v1 with
@@ -600,7 +643,7 @@ let internal_lte =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (<= %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin match v1 with
@@ -643,7 +686,7 @@ let internal_gt =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (> %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin match v1 with
@@ -686,7 +729,7 @@ let internal_gte =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (>= %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin match v1 with
@@ -729,7 +772,7 @@ let internal_equal =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (= %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -784,7 +827,7 @@ let internal_is_char =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -795,7 +838,7 @@ let internal_char_equal =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char=? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -840,7 +883,7 @@ let internal_char_gt =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char>? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -885,7 +928,7 @@ let internal_char_ge =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char>=? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -931,7 +974,7 @@ let internal_char_lt =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char<? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -977,7 +1020,7 @@ let internal_char_le =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char<=? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -1040,7 +1083,7 @@ let internal_char_numeric =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char-numeric? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -1072,7 +1115,7 @@ let internal_char_alphabetic =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (char-alphabetic? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -1093,7 +1136,7 @@ let internal_is_str =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -1105,7 +1148,7 @@ let internal_str_equal =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string=? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -1150,7 +1193,7 @@ let internal_str_gt =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string>? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -1195,7 +1238,7 @@ let internal_str_ge =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string>=? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -1240,7 +1283,7 @@ let internal_str_lt =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string<? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -1286,7 +1329,7 @@ let internal_str_le =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string<=? %s)"
                     (show_list show_exp_val vs)))
       |v1 :: vs' ->
         begin
@@ -1343,7 +1386,7 @@ let internal_str_length =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string-length? %s)"
                     (show_list show_exp_val vs)))
     end)
 
@@ -1354,7 +1397,7 @@ let internal_char_to_str =
       |[] ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string %s)"
                     (show_list show_exp_val vs)))
       |_ ->
         let rec make_str_from_chars vs =
@@ -1412,7 +1455,7 @@ let internal_str_ref =
       |_ ->
         raise (Error
                  (Printf.sprintf
-                    "Incorrect argument count in call %s"
+                    "Incorrect argument count in call (string-ref %s)"
                     (show_list show_exp_val vs)))
     end)
 
