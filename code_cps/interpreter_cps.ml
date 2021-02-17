@@ -16,7 +16,18 @@ open Interpreter_essentials_cps
 exception Error of string
 exception Not_implemented_yet
 
-
+let rec aux_map_scheme_proper_list_to_ocaml_list v =
+  begin
+    match v with
+    |Null -> []
+    |Pair(v1, v2s) ->
+      v1 :: aux_map_scheme_proper_list_to_ocaml_list v2s
+    |_ ->
+      raise (Error
+               (Printf.sprintf 
+                    "Error in apply: Not a proper list: %s"
+                    (show_exp_val v)))
+  end
 (* Defining the evaluation function/ interpreter in CPS. *)
         
 let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
@@ -45,37 +56,19 @@ let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
           eval_cps exp2 env k)
     |Apply (e, es) ->
       (* Left to right evaluation order *)
-      eval_cps e env (fun v -> evlis_cps es env (fun vs ->
-      begin
-        match v with
-        |Closure p ->
-          p vs k
-        |Primitive p ->
-          k (p vs)
-        (* Just need to finish these 2 clauses, add apply and ccc inside initial environment *)
-        |APPLY ->
-          failwith "unimplemented"
-        |CCC ->
-          failwith "unimplemented"
-        |_ ->
-          raise (Error
-                   (Printf.sprintf
-                      "Not a procedure: %s"
-                      (show_exp_val v)))
-      end))
-    |Let (_) ->
-      failwith "unimplemented"
-      (*
+      eval_cps e env (fun v -> evlis_cps es env (fun vs -> myapply v vs k))
+      
+    |Let (xs, e) ->
       let name_list, exp_list = List.split xs in
-      let exp_val_list = evlis_cps exp_list env k in
       let body = e in
+      evlis_cps exp_list env (fun vs -> 
       eval_cps
         body
         (extend_alist_star
            name_list
-           exp_val_list
+           vs
            env)
-        k *)
+        k)
 
     |Let_rec (xs, e) ->
       let name_list, lambda_list = List.split xs in
@@ -186,4 +179,108 @@ and evlis_cps (exps : exp list)(env : env)(k : exp_val list -> exp_val): exp_val
     |exp :: exps' ->
       (* To ensure left to right order evaluation *)
       eval_cps exp env (fun v -> evlis_cps exps' env (fun vs -> k (v :: vs)))
-  end;;
+  end
+and myapply v vs k =
+  begin
+    match v with
+    |Closure p ->
+      p vs k
+    |Primitive p ->
+      k (p vs)
+    |APPLY ->
+      applyapply vs k
+    |CWCC ->
+      applycallcc vs k
+     
+    |_ ->
+      raise (Error
+               (Printf.sprintf
+                  "Not a procedure: %s"
+                  (show_exp_val v)))
+  end
+and applyapply vs k =
+  begin
+    match vs with
+    |v1 :: v2 :: [] ->
+      let vs = aux_map_scheme_proper_list_to_ocaml_list v2 in
+      begin
+        match v1 with
+        |Closure p ->
+          p vs k
+        |Primitive p ->
+          k (p vs)
+        |CWCC ->
+          applycallcc vs k
+        |APPLY ->
+          applyapply vs k
+        |_ ->
+          raise (Error
+                   (Printf.sprintf
+                      "Error in apply: Not a procedure: %s"
+                      (show_exp_val v1)))
+      end
+    |_ ->
+      raise (Error
+               (Printf.sprintf 
+                  "Incorrect argument count in call (apply %s)"
+                  (show_list show_exp_val vs)))
+  end
+and applycallcc vs k =
+  (* the _ denotes the discarded continuation *)
+  begin
+    match vs with
+    |v :: [] ->
+      begin
+        match v with
+        |Closure p ->
+          p [Closure (fun ws _ ->
+                 begin
+                   match ws with
+                   |w :: [] ->
+                     k w
+                   |_ ->
+                     raise (Error
+                              (Printf.sprintf
+                                 "Incorrect argument count to captured continuation %s."
+                                 (show_list show_exp_val ws)))
+                 end)] k
+        |Primitive p ->
+          k (p [Closure (fun ws _ ->
+                    begin
+                      match ws with
+                      |w :: [] ->
+                        k w
+                      |_ ->
+                        raise (Error
+                                 (Printf.sprintf
+                                    "Incorrect argument count to captured continuation %s."
+                                    (show_list show_exp_val ws)))
+                    end)])
+         
+        |CWCC ->
+          let ck = (Closure (fun ws _ ->
+                        begin
+                          match ws with
+                          |w :: [] ->
+                            k w
+                          |_ ->
+                            raise (Error
+                                     (Printf.sprintf
+                                        "Incorrect argument count to captured continuation %s."
+                                        (show_list show_exp_val ws)))
+                        end)) in
+          myapply CWCC [ck] k
+          
+          
+        |_ ->
+          raise (Error
+                   (Printf.sprintf
+                      "Not a procedure: %s"
+                      (show_exp_val v)))
+         
+      end
+    |_ -> raise (Error
+                   (Printf.sprintf
+                      "Incorrect argument count to call (CWCC %s)"
+                      (show_list show_exp_val vs)))
+  end

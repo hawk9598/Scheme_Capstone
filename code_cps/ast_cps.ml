@@ -40,8 +40,9 @@ type exp_val =
   |Pair of exp_val * exp_val (* decide to make pairs immutable for now *)
   |Closure of (exp_val list -> (exp_val -> exp_val) -> exp_val)
   |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
-  |APPLY
-  |CCC
+  (* Can remove this from exp_val and the unparser_cps.ml *)
+  |APPLY 
+  |CWCC (* Var "CWCC" is bound to this in the initial environment *)
   |Null (* empty list *)
   |Recursive_closure of recur_star
 and recur_star =
@@ -55,4 +56,4 @@ and recur_star =
   |Character of char
   |Null
   |Pair of exp_val * exp_val (* but quoted pairs are NOT mutable *) 
-  |Cmpd_Quotation of quotation * quotation *)
+  |Cmpd_Quotation of quotation * quotation *) 

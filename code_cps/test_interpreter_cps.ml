@@ -418,6 +418,41 @@ let test_eval_cps_apply_error candidate =
                 failwith "Error not occurring" with Interpreter_cps.Error ("Not a procedure: 5") -> ())
   in b0; b1; b2; b3; b4; b5; b6;;
 
+(* Defining the unit tests for the let expression*)
+let test_eval_cps_let candidate =
+  let b0 = ((candidate (Let ([("x", Integer 5);
+                              ("y", Integer 7)],
+                             Apply(Var "+",
+                                   [Var "x"; Var "y"])))
+               default_empty_alist) = Int 12)
+  and b1 = ((candidate (Let ([("x", Bool true);
+                              ("y", Bool false)],
+                             If (Var "x",
+                                 Str "true",
+                                 Var "y")))
+               default_empty_alist) = String "true")
+                             
+  (* Testing whether local definitions of functions work *)
+  and b2 = ((candidate (Let ([("is_more_than_hundred?",
+                               Lambda_abstraction
+                                 (Lambda
+                                    (Args_list ["x"],
+                                     If (Apply (Var ">",
+                                                [Var "x"; Integer 100]),
+                                         Bool true,
+                                         Bool false))));
+                              ("small_number", Integer 1);
+                              ("big_number", Integer 1000)],
+                             If (Apply (Var "=",
+                                        [Integer 5; Integer 5; Integer 5]),
+                                 Apply (Var "is_more_than_hundred?",
+                                        [Var "small_number"]),
+                                 Apply (Var "is_more_than_hundred?",
+                                        [Var "big_number"]))))
+               default_empty_alist) = Boolean false)
+             
+  in b0 && b1 && b2;;
+
 (* Define the recursive functions we will be using to test let_rec *)
 let factorial_star =
   (Lambda_abstraction
@@ -752,8 +787,18 @@ let test_eval_cps_let_rec candidate =
                                  default_empty_alist = Boolean false)
                  in result))
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20 && b21 && b22 && b23 && b24 && b25 && b26 && b27;;
+   
+let test_ccc_eval_cps candidate =
+  let b0 = (candidate (Apply (Var "+",
+                              [Integer 10; Apply (Var "CWCC",
+                                                  [Lambda_abstraction (Lambda
+                                                                         (Args_list ["k"],
+                                                                          Integer 1))])]))
+              default_empty_alist = Int 11)
+  in b0;;
 
-(* Run the tests. *)
+    
+(* Run the tests. *) 
 assert (test_eval_cps_integer eval_cps_with_cont);;
 assert (test_eval_cps_integer_non_empty_env eval_cps_with_cont);;
 assert (test_eval_cps_boolean eval_cps_with_cont);;
@@ -769,4 +814,6 @@ assert (test_eval_cps_apply_fixed_arity eval_cps_with_cont);;
 assert (test_eval_cps_apply_variadic eval_cps_with_cont);;
 assert (test_eval_cps_apply_improper eval_cps_with_cont);;
 (test_eval_cps_apply_error eval_cps_with_cont);;
+assert (test_eval_cps_let eval_cps_with_cont);;
 assert (test_eval_cps_let_rec eval_cps_with_cont);;
+assert (test_ccc_eval_cps eval_cps_with_cont);;
