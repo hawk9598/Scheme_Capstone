@@ -1,6 +1,5 @@
 open Ast
 open Interpreter_essentials
-open Primitives
    
 exception Not_implemented_yet
                  
@@ -264,50 +263,5 @@ let test_aux_map_ocaml_list_to_scheme_improper_list_error candidate =
 
 (test_aux_map_ocaml_list_to_scheme_improper_list_error aux_map_ocaml_list_to_scheme_improper_list);;
 
-let test_aux_map_scheme_proper_list_to_ocaml_list candidate =
-  (* Test base case *)
-  let b0 = (candidate Null = [])
-  (* Test non-base case *)
-  and b1 = (candidate (Pair (Int 1,
-                             Null)) = [Int 1])
-  and b2 = (candidate (Pair (Int 1,
-                             Pair (String "yes",
-                                   Null))) = [Int 1; String "yes"])
-  and b3 = (candidate (Pair (Int 1,
-                             Pair (String "yes",
-                                   Pair (Boolean true,
-                                         Pair (Pair (String "test",
-                                                     Null),
-                                               Null))))) = [Int 1; String "yes"; Boolean true;
-                                                            Pair (String "test",
-                                                                  Null)])
-  and b4 = (candidate (Pair (Int 1,
-                             Pair (Character 'c',
-                                   Pair (Boolean false,
-                                         Null)))) = [Int 1; Character 'c'; Boolean false])
-  in b0 && b1 && b2 && b3 && b4;;
-
-assert (test_aux_map_scheme_proper_list_to_ocaml_list aux_map_scheme_proper_list_to_ocaml_list);;
-
-let test_aux_map_scheme_proper_list_to_ocaml_list_error candidate =
-  let b0 = (try ignore (candidate (Int 1));
-                failwith
-                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: 1") -> ())
-  and b1 = (try ignore (candidate (Pair (Int 1,
-                                         Pair (Boolean false,
-                                               Character 'n'))));
-                failwith
-                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: 'n'") -> ())
-  and b2 = (try ignore (candidate (Pair (Character 'y',
-                                         String "improper_list")));
-                failwith
-                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: \"improper_list\"") -> ())
-  and b3 = (try ignore (candidate (Pair (Null,
-                                         Boolean false)));
-                failwith
-                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: false") -> ())
-  in b0; b1; b2; b3;;
-
-(test_aux_map_scheme_proper_list_to_ocaml_list_error aux_map_scheme_proper_list_to_ocaml_list);;
 
                   

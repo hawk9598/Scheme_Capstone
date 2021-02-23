@@ -13,11 +13,127 @@ let identity =
         raise
           (Error
              (Printf.sprintf
-                "Incorrect argument count in call %s"
+                "Incorrect argument count in call: (identity %s)"
                 (show_list show_exp_val vs)))
     end)
+
+let add_two =
+  fun vs -> (begin
+                match vs with
+                |v1 :: v2 :: [] ->
+                  begin
+                    match v1 with
+                    |Int a ->
+                      begin
+                        match v2 with
+                        |Int b -> Int (a + b)
+                        |_ -> raise
+                                (Error
+                                   (Printf.sprintf
+                                      "Error in add_two: Not an integer: %s"
+                                      (show_exp_val v2)))
+                      end
+                    |_ -> raise
+                            (Error
+                               (Printf.sprintf
+                                  "Error in add_two: Not an integer: %s"
+                                  (show_exp_val v1)))
+                  end
+                |_ -> raise
+                        (Error
+                           (Printf.sprintf
+                              "Incorrect argument count in call (add_two %s)"
+                              (show_list show_exp_val vs)))
+              end)
+
+(* Defining unit test for the auxiliary function that maps a scheme value into an OCaml list of scheme values *)
+let test_aux_map_scheme_proper_list_to_ocaml_list candidate =
+  (* Test base case *)
+  let b0 = (candidate Null = [])
+  (* Test non-base case *)
+  and b1 = (candidate (Pair (Int 1,
+                             Null)) = [Int 1])
+  and b2 = (candidate (Pair (Int 1,
+                             Pair (String "yes",
+                                   Null))) = [Int 1; String "yes"])
+  and b3 = (candidate (Pair (Int 1,
+                             Pair (String "yes",
+                                   Pair (Boolean true,
+                                         Pair (Pair (String "test",
+                                                     Null),
+                                               Null))))) = [Int 1; String "yes"; Boolean true;
+                                                            Pair (String "test",
+                                                                  Null)])
+  and b4 = (candidate (Pair (Int 1,
+                             Pair (Character 'c',
+                                   Pair (Boolean false,
+                                         Null)))) = [Int 1; Character 'c'; Boolean false])
+  in b0 && b1 && b2 && b3 && b4;;
+
+assert (test_aux_map_scheme_proper_list_to_ocaml_list aux_map_scheme_proper_list_to_ocaml_list);;
+
+let test_aux_map_scheme_proper_list_to_ocaml_list_error candidate =
+  let b0 = (try ignore (candidate (Int 1));
+                failwith
+                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: 1") -> ())
+  and b1 = (try ignore (candidate (Pair (Int 1,
+                                         Pair (Boolean false,
+                                               Character 'n'))));
+                failwith
+                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: (1 , (false , 'n'))") -> ())
+  and b2 = (try ignore (candidate (Pair (Character 'y',
+                                         String "improper_list")));
+                failwith
+                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: ('y' , \"improper_list\")") -> ())
+  and b3 = (try ignore (candidate (Pair (Null,
+                                         Boolean false)));
+                failwith
+                  "Error not occurring" with Primitives.Error ("Error in apply: Not a proper list: ([] , false)") -> ())
+  in b0; b1; b2; b3;;
+
+(test_aux_map_scheme_proper_list_to_ocaml_list_error aux_map_scheme_proper_list_to_ocaml_list);;
   
 (* Unit tests for pair list primitive functions *)
+
+let test_internal_apply candidate =
+  let b0 = (candidate [Closure identity; Pair(Int 1000,
+                                              Null)] = Int 1000)
+  and b1 = (candidate [Primitive internal_add; Pair(Int 100,
+                                                    Pair(Int 10,
+                                                         Pair(Int 1,
+                                                              Null)))] = Int 111)
+  and b2 = (candidate [Primitive internal_mul; Pair(Int 1000,
+                                                    Pair(Int 10000,
+                                                         Pair(Int 0,
+                                                              Null)))] = Int 0 )
+  and b3 = (candidate [Closure add_two; Pair(Int 200,
+                                             Pair(Int 10,
+                                                  Null))] = Int 210)
+  in b0 && b1 && b2 && b3;;
+
+assert (test_internal_apply internal_apply)
+
+let test_internal_apply_error candidate =
+  (* test for incorrect number of arguments *)
+  let b0 = (try ignore (candidate []);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call (apply [])") -> ())
+  and b1 = (try ignore (candidate [Closure identity]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call (apply [Closure function])") -> ())
+  and b2 = (try ignore (candidate [Closure add_two; Int 1; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Incorrect argument count in call (apply [Closure function; 1; 2])") -> ())
+  and b3 = (try ignore (candidate [Int 1; Int 2]);
+                failwith "Error not raised" with Primitives.Error("Error in apply: Not a proper list: 2") -> ())
+  and b4 = (try ignore (candidate [Closure identity; Pair(Int 1,
+                                                          Int 2)]);
+                failwith "Error not raised" with Primitives.Error("Error in apply: Not a proper list: (1 , 2)") -> ())
+  and b5 = (try ignore (candidate [Int 1; Pair(Int 1,
+                                               Null)]);
+                failwith "Error not raised" with Primitives.Error("Error in apply: Not a procedure: 1") -> ())
+  in b0; b1; b2; b3; b4; b5;;
+
+test_internal_apply_error internal_apply;;
+                                                  
+                             
 
 let test_internal_is_pair candidate =
   let b0 = (candidate [Pair(Int 5,

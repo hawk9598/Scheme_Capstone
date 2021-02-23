@@ -787,15 +787,110 @@ let test_eval_cps_let_rec candidate =
                                  default_empty_alist = Boolean false)
                  in result))
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20 && b21 && b22 && b23 && b24 && b25 && b26 && b27;;
-   
+
+(* Defining unit tests for the apply special value *)
+
+let identity =
+  fun vs k ->
+  (begin
+      match vs with
+      |v :: [] -> k v
+      |_ ->
+        raise
+          (Error
+             (Printf.sprintf
+                "Should not occur, used for testing only."))
+    end)
+
+(* Need to define a primitive in primitives_cps that makes a scheme proper list from ocaml list *)
+  
+(*
+let test_APPLY_eval_cps candidate =
+  (* Testing for simple cases of apply *)
+  let b0 = (candidate (Apply (Var "APPLY",
+                              [Var "+"; Pair(Int 5,
+                                             Pair(Int 6,
+                                                  Null))]))
+              default_empty_alist = Int 11)
+  and b1 = (candidate (Apply (Var "APPLY",
+                              [Closure identity; Pair(Int 10,
+                                                      Null)]))
+              default_empty_alist = Int 10)
+  and b2 = (candidate (Apply (Var "APPLY",
+                              [Var "*"; Pair(Int 10,
+                                                            Pair(Int 25,
+                                                                 Pair(Int 5,
+                                                                      Null)))]))
+              default_empty_alist = Int 1250)
+  (* Testing for more complex cases of apply, i.e., apply on apply or apply on CWCC *)
+  and b3 = (candidate (Apply (Var "APPLY",
+                              [Var "APPLY"; Pair(Closure identity,
+                                                 Pair(Pair(Int 10, Null),
+                                                      Null))]))
+              default_empty_alist = Int 100)
+  in b0 && b1 && b2 && b3;; *)
+         
+                              
+(* Defining unit tests for the Call with Current Continuation special value *)
+
+(* Testing Call with Current Continuation without errors *)
 let test_ccc_eval_cps candidate =
+  (* Using Prof Danvy's examples to illustrate the obvious application of a captured continuation k, in this case,
+fun v -> v + 10 *)
   let b0 = (candidate (Apply (Var "+",
                               [Integer 10; Apply (Var "CWCC",
                                                   [Lambda_abstraction (Lambda
                                                                          (Args_list ["k"],
                                                                           Integer 1))])]))
               default_empty_alist = Int 11)
-  in b0;;
+         
+  and b1 = (candidate (Apply (Var "+",
+                              [Integer 10; Apply (Var "CWCC",
+                                                  [Lambda_abstraction (Lambda
+                                                                         (Args_list ["k"],
+                                                                          Apply (Var "k",
+                                                                                 [Integer 1])))])]))
+              default_empty_alist = Int 11)
+  (* The division by zero is not triggered because the application of the captured continuation k to 1 will still yield 11, leaving the division by 0 untriggered *)       
+  and b2 = (candidate (Apply (Var "+",
+                              [Integer 10; Apply (Var "CWCC",
+                                                  [Lambda_abstraction (Lambda
+                                                                         (Args_list ["k"],
+                                                                          Apply (Var "/",
+                                                                                 [Apply (Var "k",
+                                                                                         [Integer 1]);
+                                                                                  Integer 0])))])]))
+              default_empty_alist = Int 11)
+  and b3 = (candidate (Apply (Var "+",
+                              [Integer 10; Apply (Var "CWCC",
+                                                  [Lambda_abstraction (Lambda
+                                                                         (Args_list ["k"],
+                                                                          Apply (Var "+",
+                                                                                 [Apply (Var "k",
+                                                                                         [Integer 1]);
+                                                                                  Apply(Var "k",
+                                                                                        [Integer 100])])))])]))
+              default_empty_alist = Int 11)
+  (* Other original examples *)
+  and b4 = (candidate (Apply (Var "/",
+                              [Integer 50; Apply (Var "CWCC",
+                                                  [Lambda_abstraction (Lambda
+                                                                         (Args_list ["k"],
+                                                                          Apply (Var "+",
+                                                                                 [Integer 0;
+                                                                                  Apply (Var "k",
+                                                                                         [Integer 25])])))])]))
+              default_empty_alist = Int 2)
+  and b5 = (candidate (Apply (Var "*",
+                              [Integer 10; Apply (Var "CWCC",
+                                                  [Lambda_abstraction (Lambda
+                                                                         (Args_list ["k"],
+                                                                          Apply (Var "+",
+                                                                                 [Integer 0;
+                                                                                  Apply (Var "k",
+                                                                                         [Integer 25])])))])]))
+              default_empty_alist = Int 250)                                             
+  in b0 && b1 && b2 && b3 && b4 && b5;;
 
     
 (* Run the tests. *) 

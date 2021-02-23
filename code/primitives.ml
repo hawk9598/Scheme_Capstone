@@ -6,18 +6,20 @@ exception Error of string
 (* Defining the apply procedure *)
 
 (* Maps a scheme value into an OCaml list of scheme values. *)
-let rec aux_map_scheme_proper_list_to_ocaml_list v =
-  begin
-    match v with
-    |Null -> []
-    |Pair(v1, v2s) ->
-      v1 :: aux_map_scheme_proper_list_to_ocaml_list v2s
-    |_ ->
-      raise (Error
-               (Printf.sprintf 
+let aux_map_scheme_proper_list_to_ocaml_list p =
+  let rec visit v =
+    begin
+      match v with
+      |Null -> []
+      |Pair(v1, v2s) ->
+        v1 :: visit v2s
+      |_ ->
+        raise (Error
+                 (Printf.sprintf 
                     "Error in apply: Not a proper list: %s"
-                    (show_exp_val v)))
-  end
+                    (show_exp_val p)))
+    end
+  in visit p
   
 (* Internal apply function that can be used on variadic arguments *)
 let internal_apply =
@@ -1454,10 +1456,6 @@ let internal_str_ref =
                     (show_list show_exp_val vs)))
     end)
 
-    (* Change error message such that the calling function name is also present *)
-
-     (* Collecting all error messages into one error function *)
-     
      (* Mutable list vs immutable list, circularity of lists can be present due to the mutability of the list elements. Implement the list length, append functions as library functions inside the Scheme environment. *)
      
      (* More efficient interpreter will avoid the construction of list in terms of the arguments taken in (i.e. fun vs). Can write about the possible optimizations to be made to the primitive functions, i.e. implement primitives with determined aritiesto factorize the commonality of the primitives that checks the type and returns true for one argument, etc.  *)
