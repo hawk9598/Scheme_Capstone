@@ -175,9 +175,9 @@ let rec show_exp_val v =
     |Recursive_closure _ ->
       "Recursive closure function"
     |APPLY  ->
-      "Special Value Apply."
+      "Special Value APPLY"
     |CWCC ->
-      "Call with Current Continuation."
+      "Special Value Call with Current Continuation"
       
   end;;
 

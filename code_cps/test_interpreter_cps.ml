@@ -790,46 +790,143 @@ let test_eval_cps_let_rec candidate =
 
 (* Defining unit tests for the apply special value *)
 
-let identity =
-  fun vs k ->
-  (begin
-      match vs with
-      |v :: [] -> k v
-      |_ ->
-        raise
-          (Error
-             (Printf.sprintf
-                "Should not occur, used for testing only."))
-    end)
-
-(* Need to define a primitive in primitives_cps that makes a scheme proper list from ocaml list *)
-  
-(*
 let test_APPLY_eval_cps candidate =
-  (* Testing for simple cases of apply *)
+  (* Testing for simple cases of APPLY special value *)
   let b0 = (candidate (Apply (Var "APPLY",
-                              [Var "+"; Pair(Int 5,
-                                             Pair(Int 6,
-                                                  Null))]))
-              default_empty_alist = Int 11)
+                              [Var "+"; Apply (Var "list",
+                                               [Integer 10; Integer 20; Integer 40; Integer 30])]))
+              default_empty_alist = Int 100)
   and b1 = (candidate (Apply (Var "APPLY",
-                              [Closure identity; Pair(Int 10,
-                                                      Null)]))
+                              [Lambda_abstraction
+                                 (Lambda (Args_list ["x"],
+                                          Var "x")); Apply (Var "list",
+                                                        [Integer 10])]))
               default_empty_alist = Int 10)
   and b2 = (candidate (Apply (Var "APPLY",
-                              [Var "*"; Pair(Int 10,
-                                                            Pair(Int 25,
-                                                                 Pair(Int 5,
-                                                                      Null)))]))
-              default_empty_alist = Int 1250)
-  (* Testing for more complex cases of apply, i.e., apply on apply or apply on CWCC *)
+                              [Var "*"; Apply (Var "list",
+                                               [Integer 10; Integer 5; Integer (-1)])]))
+              default_empty_alist = Int (-50))
   and b3 = (candidate (Apply (Var "APPLY",
-                              [Var "APPLY"; Pair(Closure identity,
-                                                 Pair(Pair(Int 10, Null),
-                                                      Null))]))
-              default_empty_alist = Int 100)
-  in b0 && b1 && b2 && b3;; *)
+                              [Lambda_abstraction
+                                 (Lambda (Args_list ["a"],
+                                          Apply (Var "+",
+                                                 [Var "a"; Integer 1]))); Apply (Var "list",
+                                                                                 [Integer 10])]))
+              default_empty_alist = Int 11)
+  and b4 = (candidate (Apply (Var "APPLY",
+                              [Lambda_abstraction
+                                 (Lambda (Args_list [],
+                                          Integer 1)); Apply (Var "list",
+                                                              [])]))
+              default_empty_alist = Int 1)
+  and b5 = (candidate (Apply (Var "APPLY",
+                              [Lambda_abstraction
+                                 (Lambda (Args_list ["a"; "b"],
+                                          Apply (Var "+",
+                                                 [Var "b"; Apply (Var "+",
+                                                                  [Var "a"; Integer 1])]))); Apply (Var "list",
+                                                                                                    [Integer 10; Integer 100])]))
+              default_empty_alist = Int 111)
+  and b6 = (candidate (Apply (Var "APPLY",
+                              [Lambda_abstraction
+                                 (Lambda (Args_list ["a"; "b"; "c"],
+                                          Apply (Var "+",
+                                                 [Var "b"; Apply (Var "+",
+                                                                  [Var "a"; Apply (Var "+",
+                                                                                   [Var "c"; Integer 1])])])));
+                               Apply (Var "list",
+                                      [Integer 10; Integer 100; Integer 1000])]))
+              default_empty_alist = Int 1111)
          
+  (* Testing for more complex cases of apply, i.e., apply on apply or apply on CWCC *)
+  and b7 = (candidate (Apply (Var "APPLY",
+                              [Var "APPLY"; Apply (Var "list",
+                                                   [Lambda_abstraction
+                                                      (Lambda (Args_list ["x"],
+                                                               Var "x"));
+                                                    Apply (Var "list",
+                                                           [Integer 10])])]))
+              default_empty_alist = Int 10)
+  and b8 = (candidate (Apply (Var "APPLY",
+                              [Var "APPLY"; Apply (Var "list",
+                                                   [Lambda_abstraction
+                                                      (Lambda (Args_list [],
+                                                               Integer 1)); Apply (Var "list",
+                                                                                   [])])]))
+              default_empty_alist = Int 1)
+  and b9 = (candidate (Apply (Var "APPLY",
+                              [Var "APPLY"; Apply (Var "list",
+                                                   [Lambda_abstraction
+                                                      (Lambda (Args_list ["a"; "b"],
+                                                               Apply (Var "+",
+                                                                      [Var "a"; Apply (Var "+",
+                                                                                       [Var "b"; Integer 1])])));
+                                                    Apply (Var "list",
+                                                           [Integer 10; Integer 20])])]))
+              default_empty_alist = Int 31)
+  and b10 = (candidate (Apply (Var "+",
+                               [Integer 1; Apply (Var "APPLY",
+                                                  [Var "CWCC"; Apply (Var "list",
+                                                                      [Lambda_abstraction
+                                                                         (Lambda (Args_list ["k"],
+                                                                                  Integer 10))])])]))
+               default_empty_alist = Int 11)
+  and b11 = (candidate (Apply (Var "+",
+                               [Integer 1; Apply (Var "APPLY",
+                                                  [Var "CWCC"; Apply (Var "list",
+                                                                      [Lambda_abstraction
+                                                                         (Lambda (Args_list ["k"],
+                                                                                  Apply (Var "k",
+                                                                                         [Integer 10])))])])]))
+               default_empty_alist  = Int 11)
+  and b12 = (candidate (Apply (Var "+",
+                               [Integer 1; Apply (Var "APPLY",
+                                                  [Var "CWCC"; Apply (Var "list",
+                                                                      [Lambda_abstraction
+                                                                         (Lambda (Args_list ["k"],
+                                                                                  Apply (Var "k",
+                                                                                         [Integer 10])))])])]))
+               default_empty_alist  = Int 11)
+  and b13 = (candidate (Apply (Var "+",
+                               [Integer 1; Apply (Var "APPLY",
+                                                  [Var "CWCC"; Apply (Var "list",
+                                                                      [Lambda_abstraction
+                                                                         (Lambda (Args_list ["k"],
+                                                                                  Apply (Var "/",
+                                                                                         [Apply (Var "k",
+                                                                                                 [Integer 10]);
+                                                                                          Integer 0])))])])]))
+               default_empty_alist  = Int 11)
+          
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13;;
+
+let test_APPLY_error_eval_cps candidate =
+  let b0 = (try ignore (candidate (Apply (Var "APPLY",
+                                          [Integer 1; Apply (Var "list",
+                                                             [Integer 1])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Error in APPLY: Not a procedure: 1") -> ())
+  and b1 = (try ignore (candidate (Apply (Var "APPLY",
+                                          [Bool false; Apply (Var "list",
+                                                              [Bool true])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Error in APPLY: Not a procedure: false") -> ())
+  and b2 = (try ignore (candidate (Apply (Var "APPLY",
+                                          [Var "APPLY"; Apply (Var "list",
+                                                               [Integer 1; Apply (Var "list",
+                                                                                  [Integer 1; Integer 2])])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Error in APPLY: Not a procedure: 1") -> ())
+  and b3 = (try ignore (candidate (Apply (Var "APPLY",
+                                          [Var "APPLY"; Apply (Var "list",
+                                                               [Str "not_function"; Apply (Var "list",
+                                                                                           [Integer 1; Str "nested"])])])) default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Error in APPLY: Not a procedure: \"not_function\"") -> ())
+  and b4 = (try ignore (candidate (Apply (Var "APPLY",
+                                          [Var "APPLY"]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count in call (APPLY [Special Value APPLY])") -> ())
+  in b0; b1; b2; b3; b4;;
                               
 (* Defining unit tests for the Call with Current Continuation special value *)
 
@@ -911,4 +1008,6 @@ assert (test_eval_cps_apply_improper eval_cps_with_cont);;
 (test_eval_cps_apply_error eval_cps_with_cont);;
 assert (test_eval_cps_let eval_cps_with_cont);;
 assert (test_eval_cps_let_rec eval_cps_with_cont);;
+assert (test_APPLY_eval_cps eval_cps_with_cont);;
+(test_APPLY_error_eval_cps eval_cps_with_cont);;
 assert (test_ccc_eval_cps eval_cps_with_cont);;

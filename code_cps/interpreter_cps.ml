@@ -216,13 +216,13 @@ and applyapply vs k =
         |_ ->
           raise (Error
                    (Printf.sprintf
-                      "Error in apply: Not a procedure: %s"
+                      "Error in APPLY: Not a procedure: %s"
                       (show_exp_val v1)))
       end
     |_ ->
       raise (Error
                (Printf.sprintf 
-                  "Incorrect argument count in call (apply %s)"
+                  "Incorrect argument count in call (APPLY %s)"
                   (show_list show_exp_val vs)))
   end
 and applycallcc vs k =

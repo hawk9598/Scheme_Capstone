@@ -21,6 +21,7 @@ let empty_alist = []
                 
 let default_empty_alist =
   [ ("pair?",  Primitive internal_is_pair);
+    ("list", Primitive internal_list);
     ("cons",  Primitive internal_cons);
     ("car",  Primitive internal_car);
     ("cdr",  Primitive internal_cdr);

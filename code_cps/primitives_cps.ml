@@ -2,23 +2,7 @@ open Unparser_cps
 open Ast_cps
 
 exception Error of string
-
-(* Defining the apply procedure *)
-
-(* Maps a scheme value into an OCaml list of scheme values. *)
-let rec aux_map_scheme_proper_list_to_ocaml_list v =
-  begin
-    match v with
-    |Null -> []
-    |Pair(v1, v2s) ->
-      v1 :: aux_map_scheme_proper_list_to_ocaml_list v2s
-    |_ ->
-      raise (Error
-               (Printf.sprintf 
-                    "Error in apply: Not a proper list: %s"
-                    (show_exp_val v)))
-  end
-  
+                 
 (* Defining internal functions for pairs and lists *)
                  
 let internal_is_pair =
@@ -39,6 +23,17 @@ let internal_is_pair =
                     "Incorrect argument count in call (pair? %s)"
                     (show_list show_exp_val vs)))
     end)
+
+let internal_list =
+  (fun vs ->
+    let rec visit xs =
+      begin
+        match xs with
+        |[] -> Null
+        |x :: xs' ->
+          Pair(x, visit xs')
+      end
+    in visit vs)
 
 let internal_cons =
   (fun vs ->
