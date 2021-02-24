@@ -241,7 +241,7 @@ and applycallcc vs k =
                    |_ ->
                      raise (Error
                               (Printf.sprintf
-                                 "Incorrect argument count to captured continuation %s."
+                                 "Incorrect argument count to captured continuation %s"
                                  (show_list show_exp_val ws)))
                  end)] k
         |Primitive p ->
@@ -253,7 +253,7 @@ and applycallcc vs k =
                       |_ ->
                         raise (Error
                                  (Printf.sprintf
-                                    "Incorrect argument count to captured continuation %s."
+                                    "Incorrect argument count to captured continuation %s"
                                     (show_list show_exp_val ws)))
                     end)])
          
@@ -266,7 +266,7 @@ and applycallcc vs k =
                           |_ ->
                             raise (Error
                                      (Printf.sprintf
-                                        "Incorrect argument count to captured continuation %s."
+                                        "Incorrect argument count to captured continuation %s"
                                         (show_list show_exp_val ws)))
                         end)) in
           myapply CWCC [ck] k
@@ -275,7 +275,7 @@ and applycallcc vs k =
         |_ ->
           raise (Error
                    (Printf.sprintf
-                      "Not a procedure: %s"
+                      "Error in CWCC: Not a procedure: %s"
                       (show_exp_val v)))
          
       end

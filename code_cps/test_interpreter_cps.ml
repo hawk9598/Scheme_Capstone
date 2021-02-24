@@ -926,7 +926,15 @@ let test_APPLY_error_eval_cps candidate =
                                           [Var "APPLY"]))
                           default_empty_alist);
                 failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count in call (APPLY [Special Value APPLY])") -> ())
-  in b0; b1; b2; b3; b4;;
+  and b5 = (try ignore (candidate (Apply (Var "APPLY",
+                                          [Integer 1]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count in call (APPLY [1])") -> ())
+  and b6 = (try ignore (candidate (Apply (Var "APPLY",
+                                          [Var "CWCC"]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count in call (APPLY [Special Value Call with Current Continuation])") -> ())
+  in b0; b1; b2; b3; b4; b5; b6;;
                               
 (* Defining unit tests for the Call with Current Continuation special value *)
 
@@ -989,7 +997,76 @@ fun v -> v + 10 *)
               default_empty_alist = Int 250)                                             
   in b0 && b1 && b2 && b3 && b4 && b5;;
 
-    
+(* Testing to see that the appropriate error is triggered when faulty input is passed to eval_cps for CWCC case *)
+let test_ccc_error_eval_cps candidate =
+  let b0 = (try ignore (candidate (Apply (Var "CWCC",
+                                          [Apply (Var "APPLY",
+                                                  [Lambda_abstraction
+                                                     (Lambda (Args_list ["x"],
+                                                              Apply (Var "+",
+                                                                     [Var "x"; Integer 5]))); Apply (Var "list",
+                                                                                                     [Integer 3])])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Error in CWCC: Not a procedure: 8") -> ())
+  and b1 = (try ignore (candidate (Apply (Var "+",
+                                          [Integer 5; Apply (Var "CWCC",
+                                                             [Apply (Var "APPLY",
+                                                                     [Lambda_abstraction
+                                                                        (Lambda (Args_list ["x"],
+                                                                                 Apply (Var "+",
+                                                                                        [Var "x"; Integer 5])));
+                                                                      Apply(Var "list",
+                                                                            [Integer 3])])])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Error in CWCC: Not a procedure: 8") -> ())
+  and b2 = (try ignore (candidate (Apply (Var "+",
+                                          [Integer 5; Apply (Var "CWCC",
+                                                             [Var "APPLY"])]))
+                                                                     
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Error in CWCC: Not a procedure: Special Value APPLY") -> ())
+  and b3 = (try ignore (candidate (Apply (Var "+",
+                                          [Integer 5; Apply (Var "CWCC",
+                                                             [Lambda_abstraction (Lambda
+                                                                                    (Args_list ["k"],
+                                                                                     Apply (Var "/",
+                                                                                            [Apply (Var "k",
+                                                                                                    [Integer 1]);
+                                                                                             Integer 0])));
+                                                              Integer 5])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to call (CWCC [Closure function; 5])") ->())
+  and b4 = (try ignore (candidate (Apply (Var "+",
+                                          [Integer 5; Apply (Var "CWCC",
+                                                             [Lambda_abstraction (Lambda
+                                                                                    (Args_list ["k"],
+                                                                                     Apply (Var "/",
+                                                                                            [Apply (Var "k",
+                                                                                                    [Integer 1]);
+                                                                                             Integer 0])));
+                                                              Integer 5; Bool false])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to call (CWCC [Closure function; 5; false])") ->())
+  and b5 = (try ignore (candidate (Apply (Var "+",
+                                          [Integer 5; Apply (Var "CWCC",
+                                                             [Lambda_abstraction (Lambda
+                                                                                    (Args_list ["k"],
+                                                                                     Apply (Var "/",
+                                                                                            [Apply (Var "k",
+                                                                                                    [Integer 1; Integer 2]); Integer 0])))])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to captured continuation [1; 2]") ->())
+  and b6 = (try ignore (candidate (Apply (Var "+",
+                                          [Integer 5; Apply (Var "CWCC",
+                                                             [Lambda_abstraction (Lambda
+                                                                                    (Args_list ["k"],
+                                                                                     Apply (Var "k",
+                                                                                            [])))])]))
+                          default_empty_alist);
+                failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to captured continuation []") ->())
+                                                                                     
+  in b0; b1; b2; b3; b4; b5; b6;;
+
 (* Run the tests. *) 
 assert (test_eval_cps_integer eval_cps_with_cont);;
 assert (test_eval_cps_integer_non_empty_env eval_cps_with_cont);;
@@ -1011,3 +1088,4 @@ assert (test_eval_cps_let_rec eval_cps_with_cont);;
 assert (test_APPLY_eval_cps eval_cps_with_cont);;
 (test_APPLY_error_eval_cps eval_cps_with_cont);;
 assert (test_ccc_eval_cps eval_cps_with_cont);;
+(test_ccc_error_eval_cps eval_cps_with_cont);;

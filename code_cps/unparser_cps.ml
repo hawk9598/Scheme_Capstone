@@ -208,6 +208,8 @@ let test_show_list_of_exp_val candidate =
                                      Pair(Null,
                                           String "hi")]
              = "[~-100; Primitive function; true; ([] , \"hi\")]")
-  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13;;
+  and b14 = (candidate show_exp_val [APPLY; CWCC; Boolean true; Int 1; String "string"]
+             = "[Special Value APPLY; Special Value Call with Current Continuation; true; 1; \"string\"]")
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14;;
 
 assert(test_show_list_of_exp_val show_list);;
