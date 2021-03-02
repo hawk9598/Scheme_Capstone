@@ -771,6 +771,148 @@ let test_eval_let_rec candidate =
                  in result))
   in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13 && b14 && b15 && b16 && b17 && b18 && b19 && b20 && b21 && b22 && b23 && b24 && b25 && b26 && b27;;
 
+(* Test for quotation of base values *)
+let test_eval_quote_base candidate =
+  (* Test for integers *)
+  let b0 = (let n = Random.int 100 in
+            (candidate (Quote (Integer n)) default_empty_alist = Int n))
+  (* Test for booleans *)
+  and b1 = (candidate (Quote (Bool true)) default_empty_alist = Boolean true)
+  and b2 = (candidate (Quote (Bool false)) default_empty_alist = Boolean false)
+  (* Test for characters *)
+  and b3 = (candidate (Quote (Char 'a')) default_empty_alist = Character 'a')
+  and b4 = (candidate (Quote (Char 'z')) default_empty_alist = Character 'z')
+  and b5 = (candidate (Quote (Char '1')) default_empty_alist = Character '1')
+  and b6 = (candidate (Quote (Char '9')) default_empty_alist = Character '9')
+  and b7 = (candidate (Quote (Char 'A')) default_empty_alist = Character 'A')
+  and b8 = (candidate (Quote (Char 'Z')) default_empty_alist = Character 'Z')
+  (* Test for strings *)
+  and b9 = (candidate (Quote (Str "hello")) default_empty_alist = String "hello")
+  and b10 = (candidate (Quote (Str "capstone_2021")) default_empty_alist = String "capstone_2021")
+  (* Test for Variables and Recursive Variables *)
+  and b11 = (candidate (Quote (Var "x")) default_empty_alist = Symbol "x")
+  and b12 = (candidate (Quote (Var_rec ("factorial", 0))) default_empty_alist = Symbol "factorial")
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12;;
+
+(* Testing for quotation of non-base values *)
+let test_eval_quote_non_base candidate =
+  (* Testing for if expressions *)
+  let b0 = (candidate (Quote (If (Apply (Var "=",
+                                         [Integer 5; Integer 4]),
+                                  Char 'Y',
+                                  Char 'N'))) default_empty_alist
+            = Pair (Symbol "if",
+                    Pair (Pair (Symbol "=",
+                                Pair (Int 5,
+                                      Pair (Int 4,
+                                            Null))),
+                          Pair (Character 'Y',
+                                Pair (Character 'N',
+                                      Null)))))
+  and b1 = (candidate (Quote (If (Bool true,
+                                  Apply (Var "=",
+                                         [Integer 5; Integer 5]),
+                                  Str "false"))) default_empty_alist
+            = Pair (Symbol "if",
+                    Pair (Boolean true,
+                          Pair (Pair (Symbol "=",
+                                      Pair (Int 5,
+                                            Pair (Int 5,
+                                                  Null))),
+                                Pair (String "false",
+                                      Null)))))
+  (* Test for Let expressions *)
+  and b2 = (candidate (Quote (Let ([("five", Integer 5);
+                                    ("add_by_two", Lambda_abstraction
+                                                     (Args_list ["x"],
+                                                      Apply (Var "+",
+                                                             [Var "x"; Integer 2])))],
+                                   Apply (Var "add_by_two",
+                                          [Var "five"])))) default_empty_alist
+            = Pair (Symbol "let",
+                    Pair (Pair (Pair (Symbol "five",
+                                      Pair (Int 5,
+                                            Null)),
+                                Pair (Pair (Symbol "add_by_two",
+                                            Pair (Pair (Symbol "lambda",
+                                                        Pair (Pair (Symbol "x",
+                                                                    Null),
+                                                              Pair (Pair (Symbol "+",
+                                                                          Pair (Symbol "x",
+                                                                                Pair (Int 2,
+                                                                                      Null))),
+                                                                    Null))),
+                                                  Null)),
+                                            Null)),
+                                Pair (Pair (Symbol "add_by_two",
+                                            Pair (Symbol "five",
+                                                  Null)),
+                                      Null))))
+  and b3 = (candidate (Quote (Let ([("six", Integer 6);
+                                    ("seven", Integer 7);
+                                    ("compare", Var "<")],
+                                   Apply (Var "compare",
+                                          [Var "six"; Var "seven"])))) default_empty_alist
+            = Pair (Symbol "let",
+                    Pair (Pair (Pair (Symbol "six",
+                                      Pair (Int 6,
+                                            Null)),
+                                Pair (Pair (Symbol "seven",
+                                            Pair (Int 7,
+                                                  Null)),
+                                      Pair (Pair (Symbol "compare",
+                                                  Pair (Symbol "<",
+                                                        Null)),
+                                            Null))),
+                          Pair (Pair (Symbol "compare",
+                                      Pair (Symbol "six",
+                                            Pair (Symbol "seven",
+                                                  Null))),
+                                Null))))
+  (* Testing for let-rec expressions *)
+  and b4 = (candidate (Quote (Let_rec ([("factorial",
+                                         (Args_list ["x"],
+                                          If (Apply (Var "=", [Var "x"; Integer 0]),
+                                              Integer 1,
+                                              Apply (Var "*",
+                                                     [Var "x" ;
+                                                      Apply (Var_rec ("factorial", 0),
+                                                             [Apply (Var "-",
+                                                                     [Var "x";
+                                                                      Integer 1])])]))))],
+                                       Apply (Var_rec ("factorial", 0),
+                                              [Var "x"])))) default_empty_alist
+            = Pair (Symbol "letrec",
+                    Pair (Pair (Pair (Symbol "factorial",
+                                      Pair (Pair (Symbol "lambda",
+                                                  Pair (Pair (Symbol "x",
+                                                              Null),
+                                                        Pair (Pair (Symbol "if",
+                                                                    Pair (Pair (Symbol "=",
+                                                                                Pair (Symbol "x",
+                                                                                      Pair (Int 0,
+                                                                                            Null))),
+                                                                          Pair (Int 1,
+                                                                                Pair (Pair (Symbol "*",
+                                                                                            Pair (Symbol "x",
+                                                                                                  Pair (Pair (Symbol "factorial",
+                                                                                                              Pair (Pair (Symbol "-",
+                                                                                                                          Pair (Symbol "x",
+                                                                                                                                Pair (Int 1,
+                                                                                                                                      Null))),
+                                                                                                                    Null)),
+                                                                                                        Null))),
+                                                                                      Null)))),
+                                                              Null))),
+                                            Null)),
+                                Null),
+                          Pair (Pair (Symbol "factorial",
+                                   Pair (Symbol "x", Null)),
+                             Null))))
+                                   
+                                            
+  in b0 && b1 && b2 && b3 && b4;;
+
 (* Run the tests. *)
 assert (test_eval_integer eval);;
 assert (test_eval_integer_non_empty_env eval);;
@@ -789,3 +931,5 @@ assert (test_eval_apply_improper eval);;
 (test_eval_apply_error eval);;
 assert (test_eval_let eval);;
 assert (test_eval_let_rec eval);;
+assert (test_eval_quote_base eval);;
+assert (test_eval_quote_non_base eval);;
