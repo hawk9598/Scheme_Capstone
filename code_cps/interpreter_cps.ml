@@ -28,6 +28,87 @@ let rec aux_map_scheme_proper_list_to_ocaml_list v =
                     "Error in apply: Not a proper list: %s"
                     (show_exp_val v)))
   end
+
+(* Defining the eval function for quoted expressions *)
+let rec eval_quoted_expression e =
+  match e with
+  | Integer n ->
+     Int n
+  | Bool b ->
+     Boolean b
+  | Char c ->
+     Character c
+  | Str s ->
+     String s
+  | Var x ->
+     Symbol x
+  | Var_rec (x, _) ->
+     Symbol x
+  | If (test, consequent, alternative) ->
+     Pair (Symbol "if",
+           Pair (eval_quoted_expression test,
+                 Pair (eval_quoted_expression consequent,
+                       Pair (eval_quoted_expression alternative,
+                             Null))))
+  | Let (bindings, body) ->
+     Pair (Symbol "let",
+           Pair (eval_quoted_let_bindings bindings,
+                 Pair (eval_quoted_expression body,
+                       Null)))
+  | Let_rec (bindings, body) ->
+     Pair (Symbol "letrec",
+           Pair (eval_quoted_letrec_bindings bindings,
+                 Pair (eval_quoted_expression body,
+                       Null)))
+  | Quote e' ->
+     Pair (Symbol "quote",
+           Pair (eval_quoted_expression e',
+                 Null)) 
+  | Lambda_abstraction (formals, body) ->
+     Pair (Symbol "lambda",
+           Pair (eval_quoted_formals formals,
+                 Pair (eval_quoted_expression body,
+                       Null)))
+  | Apply (e0, es) ->
+     Pair (eval_quoted_expression e0,
+           evlis_quoted_expressions es)
+and evlis_quoted_expressions es =
+  match es with
+  | [] ->
+     Null
+  | e :: es' ->
+     Pair (eval_quoted_expression e,
+           evlis_quoted_expressions es')
+and eval_quoted_formals formals =
+  match formals with
+  | Args_list xs ->
+     List.fold_right (fun x c -> Pair (Symbol x, c)) xs Null
+  | Args_improper_list (xs, x) ->
+     List.fold_right (fun x c -> Pair (Symbol x, c)) xs (Symbol x)
+  | Args x ->
+     Symbol x
+and eval_quoted_let_bindings bs =
+  match bs with
+  | [] ->
+     Null
+  | (x, e) :: bs ->
+     Pair (Pair (Symbol x,
+                 Pair (eval_quoted_expression e,
+                       Null)),
+           eval_quoted_let_bindings bs)
+and eval_quoted_letrec_bindings bs =
+  match bs with
+  | [] ->
+     Null
+  | (x, (formals, body)) :: bs' ->
+     Pair (Pair (Symbol x,
+                 Pair (Pair (Symbol "lambda",
+                             Pair (eval_quoted_formals formals,
+                                   Pair (eval_quoted_expression body,
+                                         Null))),
+                       Null)),
+           eval_quoted_letrec_bindings bs')
+    
 (* Defining the evaluation function/ interpreter in CPS. *)
         
 let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
@@ -74,7 +155,7 @@ let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
       let name_list, lambda_list = List.split xs in
       let ws = (List.map (fun lambda ->
                     begin match lambda with
-                    |Lambda(Args_list(lambda_formals), lambda_body)
+                    |(Args_list(lambda_formals), lambda_body)
                      ->
                       (fun (Recur_star ws) vs k ->
                         eval_cps
@@ -91,7 +172,7 @@ let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
                                         (Recur_star ws))))
                                 env))
                           k)
-                     |Lambda(Args(lambda_formal), lambda_body)
+                     |(Args(lambda_formal), lambda_body)
                      ->
                       (fun (Recur_star ws) vs k ->
                         eval_cps
@@ -108,7 +189,7 @@ let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
                                         (Recur_star ws))))
                                 env))
                           k)
-                     |Lambda(Args_improper_list(lambda_formals, lambda_formal), lambda_body)
+                     |(Args_improper_list(lambda_formals, lambda_formal), lambda_body)
                       ->
                        (fun (Recur_star ws) vs k ->
                          let xs = lambda_formals in
@@ -143,7 +224,7 @@ let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
            env)
         k
       
-    |Lambda_abstraction (Lambda(formals, body)) ->
+    |Lambda_abstraction (formals, body) ->
       k
       (begin
         match formals with
@@ -169,7 +250,9 @@ let rec eval_cps (exp : exp) (env: env)(k:  exp_val -> exp_val): exp_val =
                 body
                 (extend_alist x v (extend_alist_star xs vs' env))
                 k)
-      end)                          
+        end)
+    |Quote e' ->
+      k (eval_quoted_expression e')
   end
 and evlis_cps (exps : exp list)(env : env)(k : exp_val list -> exp_val): exp_val =
   begin

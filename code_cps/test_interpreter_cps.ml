@@ -209,41 +209,36 @@ let test_eval_cps_if_with_primitives candidate =
 let test_eval_cps_apply_fixed_arity candidate =
   let b0 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_list ["x"; "y"; "z"],
-                                  If (Var "x",
-                                      Var "y",
-                                      Var "z")))),
+                              (Args_list ["x"; "y"; "z"],
+                               If (Var "x",
+                                   Var "y",
+                                   Var "z"))),
                            [Bool true; Integer 1; Integer 2]))
                empty_alist) = Int 1)
   and b1 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_list ["x"; "y"; "z"],
-                                  If (Var "x",
-                                      Var "y",
-                                      Var "z")))),
+                              (Args_list ["x"; "y"; "z"],
+                               If (Var "x",
+                                   Var "y",
+                                   Var "z"))),
                            [Bool false; Integer 1; Integer 2]))
                empty_alist) = Int 2)
   and b2 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_list ["x"],
-                                  Var "x"))),
+                              (Args_list ["x"],
+                               Var "x")),
                            [Char 'Y']))
                empty_alist) = Character 'Y')
   and b3 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_list ["x"; "y"],
-                                  Var "x"))),
+                              (Args_list ["x"; "y"],
+                               Var "x")),
                            [Bool true; Bool false]))
                empty_alist) = Boolean true)
   and b4 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_list ["x"; "y"],
-                                  Var "y"))),
+                              (Args_list ["x"; "y"],
+                               Var "y")),
                            [Bool true; Bool false]))
                empty_alist) = Boolean false)
   in b0 && b1 && b2 && b3 && b4;;
@@ -282,98 +277,86 @@ let sum_of_scheme_list =
 let test_eval_cps_apply_variadic candidate =
   let b0 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args "x",
-                                  Apply (Var "sum_list",
-                                         [Var "x"])))),
+                              (Args "x",
+                               Apply (Var "sum_list",
+                                      [Var "x"]))),
                            [Integer 1]))
                [("sum_list", Primitive sum_of_scheme_list)]) = Int 1)
   and b1 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args "x",
-                                  Apply (Var "sum_list",
-                                         [Var "x"])))),
+                              (Args "x",
+                               Apply (Var "sum_list",
+                                      [Var "x"]))),
                            [Integer 5; Integer 10; Integer 1000; Integer (-200); Integer (-10)]))
                [("sum_list", Primitive sum_of_scheme_list)]) = Int 805)
   and b2 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args "x",
-                                  Apply (Var "car",
-                                         [Var "x"])))),
+                              (Args "x",
+                               Apply (Var "car",
+                                      [Var "x"]))),
                            [Str "car"; Integer 10; Char 'c']))
                default_empty_alist) = String "car")
   and b3 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args "x",
-                                  Apply (Var "cdr",
-                                         [Var "x"])))),
+                              (Args "x",
+                               Apply (Var "cdr",
+                                      [Var "x"]))),
                            [Integer 10; Str "cdr"; Bool true]))
                default_empty_alist) = Pair(String "cdr",
-                                     Pair(Boolean true,
-                                          Null)))
+                                           Pair(Boolean true,
+                                                Null)))
   and b4 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args "x",
-                                  Apply (Var "pair?",
-                                         [Var "x"])))),
+                              (Args "x",
+                               Apply (Var "pair?",
+                                      [Var "x"]))),
                            [Integer 10; Bool true; Char 'c']))
                default_empty_alist) = Boolean true)
   and b5 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args "x",
-                                  Apply (Var "car",
-                                         [Apply (Var "cdr",
-                                                 [Var "x"])])))),
+                              (Args "x",
+                               Apply (Var "car",
+                                      [Apply (Var "cdr",
+                                              [Var "x"])]))),
                            [Integer 10; Str "me"; Bool true; Char 'y']))
                default_empty_alist) = String "me")
-         
-         
   in b0 && b1 && b2 && b3 && b4 && b5;;
 
 let test_eval_cps_apply_improper candidate =
   let b0 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_improper_list (["x"; "y"; "z"], "args"),
-                                  Apply (Var "+",
-                                         [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
-                                                                             [Var "args"]))])))),
+                              (Args_improper_list (["x"; "y"; "z"], "args"),
+                               Apply (Var "+",
+                                      [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
+                                                                          [Var "args"]))]))),
                            [Integer 10; Integer 100; Integer (-20); Integer (-10); Str "not_an_int"]))
                default_empty_alist) = Int 80)
   and b1 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_improper_list (["x"; "y"; "z"], "args"),
-                                  Apply (Var "+",
-                                         [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
-                                                                             [Var "args"]))])))),
+                              (Args_improper_list (["x"; "y"; "z"], "args"),
+                               Apply (Var "+",
+                                      [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
+                                                                          [Var "args"]))]))),
                            [Integer 10; Integer 100; Integer (-20); Integer (-20); Integer 20; Str "not_an_int"]))
                default_empty_alist) = Int 70)
   and b2 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_improper_list (["x"; "y"; "z"], "args"),
-                                  Apply (Var "+",
-                                         [Var "x"; Var "y"; Var "z"])))),
+                              (Args_improper_list (["x"; "y"; "z"], "args"),
+                               Apply (Var "+",
+                                      [Var "x"; Var "y"; Var "z"]))),
                            [Integer 10; Integer 20; Integer 30]))
                default_empty_alist) = Int 60)
   and b3 = ((candidate (Apply
                           ((Lambda_abstraction
-                              (Lambda
-                                 (Args_improper_list (["x"; "y"; "z"], "args"),
-                                  Apply (Var "+",
-                                         [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
-                                                                      [Var "args"]));
-                                          (Apply (Var "car",
-                                                  [Apply (Var "cdr",
-                                                          [Var "args"])]))])))),
-                             [Integer (-10); Integer (-20); Integer 100; Integer 10; Integer 20; Integer 1000]))
-              default_empty_alist) = Int 100)
+                              (Args_improper_list (["x"; "y"; "z"], "args"),
+                               Apply (Var "+",
+                                      [Var "x"; Var "y"; Var "z"; (Apply (Var "car",
+                                                                          [Var "args"]));
+                                       (Apply (Var "car",
+                                               [Apply (Var "cdr",
+                                                       [Var "args"])]))]))),
+                           [Integer (-10); Integer (-20); Integer 100; Integer 10; Integer 20; Integer 1000]))
+               default_empty_alist) = Int 100)
   in b0 && b1 && b2 && b3;;
 
 let test_eval_cps_apply_error candidate =
@@ -431,16 +414,15 @@ let test_eval_cps_let candidate =
                                  Str "true",
                                  Var "y")))
                default_empty_alist) = String "true")
-                             
+         
   (* Testing whether local definitions of functions work *)
   and b2 = ((candidate (Let ([("is_more_than_hundred?",
                                Lambda_abstraction
-                                 (Lambda
-                                    (Args_list ["x"],
-                                     If (Apply (Var ">",
-                                                [Var "x"; Integer 100]),
-                                         Bool true,
-                                         Bool false))));
+                                 (Args_list ["x"],
+                                  If (Apply (Var ">",
+                                             [Var "x"; Integer 100]),
+                                      Bool true,
+                                      Bool false)));
                               ("small_number", Integer 1);
                               ("big_number", Integer 1000)],
                              If (Apply (Var "=",
@@ -450,182 +432,183 @@ let test_eval_cps_let candidate =
                                  Apply (Var "is_more_than_hundred?",
                                         [Var "big_number"]))))
                default_empty_alist) = Boolean false)
-             
+         
   in b0 && b1 && b2;;
 
 (* Define the recursive functions we will be using to test let_rec *)
 let factorial_star =
   (Lambda_abstraction
-     (Lambda (Args_list ["x"],
-              Let_rec
-                ([("factorial",
-                  Lambda (Args_list ["x"],
-                          If (Apply (Var "=", [Var "x"; Integer 0]),
-                              Integer 1,
-                              Apply (Var "*",
-                                     [Var "x" ;
-                                      Apply (Var_rec ("factorial", 0),
-                                             [Apply (Var "-",
-                                                     [Var "x";
-                                                      Integer 1])])]))))],
-                 Apply (Var_rec ("factorial", 0),
-                        [Var "x"])))));;
+     (Args_list ["x"],
+      Let_rec
+        ([("factorial",
+           (Args_list ["x"],
+            If (Apply (Var "=", [Var "x"; Integer 0]),
+                Integer 1,
+                Apply (Var "*",
+                       [Var "x" ;
+                        Apply (Var_rec ("factorial", 0),
+                               [Apply (Var "-",
+                                       [Var "x";
+                                        Integer 1])])]))))],
+         Apply (Var_rec ("factorial", 0),
+                [Var "x"]))));;
 
 let addition_star =
   (Lambda_abstraction
-     (Lambda (Args_list ["n1"; "n2"],
-              Let_rec
-                ([("addition",
-                  Lambda(Args_list ["n1"; "n2"],
-                         If (Apply (Var "=", [Var "n1";
-                                              Integer 0]),
-                             Var "n2",
-                             Apply (Var "+",
-                                    [Integer 1;
-                                     Apply (Var_rec ("addition", 0),
-                                            [Apply (Var "-",
-                                                    [Var "n1"; Integer 1]);
-                                             Var "n2"])]))))],
-                 Apply (Var_rec ("addition", 0),
-                        [Var "n1"; Var "n2"])))));;
+     (Args_list ["n1"; "n2"],
+      Let_rec
+        ([("addition",
+           (Args_list ["n1"; "n2"],
+            If (Apply (Var "=", [Var "n1";
+                                 Integer 0]),
+                Var "n2",
+                Apply (Var "+",
+                       [Integer 1;
+                        Apply (Var_rec ("addition", 0),
+                               [Apply (Var "-",
+                                       [Var "n1"; Integer 1]);
+                                Var "n2"])]))))],
+         Apply (Var_rec ("addition", 0),
+                [Var "n1"; Var "n2"]))));;
 
 let even_mutual_rec =
   (Lambda_abstraction
-     (Lambda (Args_list ["x"],
-              Let_rec
-                (["even",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool true,
-                            Apply (Var_rec ("odd", 1),
-                                     [Apply(Var "-",
-                                            [Var "x"; Integer 1])])));
-                 "odd",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("even", 0),
-                                     [Apply(Var "-",
-                                            [Var "x"; Integer 1])])))],
-                 Apply (Var_rec ("even", 0),
-                        [Var "x"])))));;
+     (Args_list ["x"],
+      Let_rec
+        (["even",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool true,
+              Apply (Var_rec ("odd", 1),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "odd",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("even", 0),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])))],
+         Apply (Var_rec ("even", 0),
+                [Var "x"]))));;
+
 let odd_mutual_rec =
   (Lambda_abstraction
-     (Lambda (Args_list ["x"],
-              Let_rec
-                (["even",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool true,
-                            Apply (Var_rec ("odd", 1),
-                                     [Apply(Var "-",
-                                            [Var "x"; Integer 1])])));
-                 "odd",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("even", 0),
-                                     [Apply(Var "-",
-                                            [Var "x"; Integer 1])])))],
-                 Apply (Var_rec ("odd", 1),
-                        [Var "x"])))));;
+     (Args_list ["x"],
+      Let_rec
+        (["even",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool true,
+              Apply (Var_rec ("odd", 1),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "odd",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("even", 0),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])))],
+         Apply (Var_rec ("odd", 1),
+                [Var "x"]))));;
 
 let ternary_mutual_rec =
   (Lambda_abstraction
-     (Lambda (Args_list ["x"],
-              Let_rec
-                (["ternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool true,
-                            Apply (Var_rec ("preternary", 2),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])));
-                  "postternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("ternary", 0),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])));
-                  "preternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("postternary", 1),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])))],
-                 Apply (Var_rec ("ternary", 0),
-                        [Var "x"])))));;
+     (Args_list ["x"],
+      Let_rec
+        (["ternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool true,
+              Apply (Var_rec ("preternary", 2),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "postternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("ternary", 0),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "preternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("postternary", 1),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])))],
+         Apply (Var_rec ("ternary", 0),
+                [Var "x"]))));;
 
 let postternary_mutual_rec =
   (Lambda_abstraction
-     (Lambda (Args_list ["x"],
-              Let_rec
-                (["ternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool true,
-                            Apply (Var_rec ("preternary", 2),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])));
-                  "postternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("ternary", 0),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])));
-                  "preternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("postternary", 1),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])))],
-                 Apply (Var_rec ("postternary", 1),
-                        [Var "x"])))));;
+     (Args_list ["x"],
+      Let_rec
+        (["ternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool true,
+              Apply (Var_rec ("preternary", 2),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "postternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("ternary", 0),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "preternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("postternary", 1),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])))],
+         Apply (Var_rec ("postternary", 1),
+                [Var "x"]))));;
 
 let preternary_mutual_rec =
   (Lambda_abstraction
-     (Lambda (Args_list ["x"],
-              Let_rec
-                (["ternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool true,
-                            Apply (Var_rec ("preternary", 2),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])));
-                  "postternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("ternary", 0),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])));
-                  "preternary",
-                  Lambda(Args_list ["x"],
-                         If(Apply (Var "=", [Var "x";
-                                             Integer 0]),
-                            Bool false,
-                            Apply (Var_rec ("postternary", 1),
-                                   [Apply(Var "-",
-                                          [Var "x"; Integer 1])])))],
-                 Apply (Var_rec ("preternary", 2),
-                        [Var "x"])))));;
+     (Args_list ["x"],
+      Let_rec
+        (["ternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool true,
+              Apply (Var_rec ("preternary", 2),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "postternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("ternary", 0),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])));
+          "preternary",
+          (Args_list ["x"],
+           If(Apply (Var "=", [Var "x";
+                               Integer 0]),
+              Bool false,
+              Apply (Var_rec ("postternary", 1),
+                     [Apply(Var "-",
+                            [Var "x"; Integer 1])])))],
+         Apply (Var_rec ("preternary", 2),
+                [Var "x"]))));;
 
 (* Defining a function that allows us to create repeated, randomized unit tests *)
 
@@ -798,9 +781,9 @@ let test_APPLY_eval_cps candidate =
               default_empty_alist = Int 100)
   and b1 = (candidate (Apply (Var "APPLY",
                               [Lambda_abstraction
-                                 (Lambda (Args_list ["x"],
-                                          Var "x")); Apply (Var "list",
-                                                        [Integer 10])]))
+                                 (Args_list ["x"],
+                                  Var "x"); Apply (Var "list",
+                                                   [Integer 10])]))
               default_empty_alist = Int 10)
   and b2 = (candidate (Apply (Var "APPLY",
                               [Var "*"; Apply (Var "list",
@@ -808,32 +791,32 @@ let test_APPLY_eval_cps candidate =
               default_empty_alist = Int (-50))
   and b3 = (candidate (Apply (Var "APPLY",
                               [Lambda_abstraction
-                                 (Lambda (Args_list ["a"],
-                                          Apply (Var "+",
-                                                 [Var "a"; Integer 1]))); Apply (Var "list",
-                                                                                 [Integer 10])]))
+                                 (Args_list ["a"],
+                                  Apply (Var "+",
+                                         [Var "a"; Integer 1])); Apply (Var "list",
+                                                                        [Integer 10])]))
               default_empty_alist = Int 11)
   and b4 = (candidate (Apply (Var "APPLY",
                               [Lambda_abstraction
-                                 (Lambda (Args_list [],
-                                          Integer 1)); Apply (Var "list",
-                                                              [])]))
+                                 (Args_list [],
+                                  Integer 1); Apply (Var "list",
+                                                     [])]))
               default_empty_alist = Int 1)
   and b5 = (candidate (Apply (Var "APPLY",
                               [Lambda_abstraction
-                                 (Lambda (Args_list ["a"; "b"],
-                                          Apply (Var "+",
-                                                 [Var "b"; Apply (Var "+",
-                                                                  [Var "a"; Integer 1])]))); Apply (Var "list",
-                                                                                                    [Integer 10; Integer 100])]))
+                                 (Args_list ["a"; "b"],
+                                  Apply (Var "+",
+                                         [Var "b"; Apply (Var "+",
+                                                          [Var "a"; Integer 1])])); Apply (Var "list",
+                                                                                           [Integer 10; Integer 100])]))
               default_empty_alist = Int 111)
   and b6 = (candidate (Apply (Var "APPLY",
                               [Lambda_abstraction
-                                 (Lambda (Args_list ["a"; "b"; "c"],
-                                          Apply (Var "+",
-                                                 [Var "b"; Apply (Var "+",
-                                                                  [Var "a"; Apply (Var "+",
-                                                                                   [Var "c"; Integer 1])])])));
+                                 (Args_list ["a"; "b"; "c"],
+                                  Apply (Var "+",
+                                         [Var "b"; Apply (Var "+",
+                                                          [Var "a"; Apply (Var "+",
+                                                                           [Var "c"; Integer 1])])]));
                                Apply (Var "list",
                                       [Integer 10; Integer 100; Integer 1000])]))
               default_empty_alist = Int 1111)
@@ -842,25 +825,25 @@ let test_APPLY_eval_cps candidate =
   and b7 = (candidate (Apply (Var "APPLY",
                               [Var "APPLY"; Apply (Var "list",
                                                    [Lambda_abstraction
-                                                      (Lambda (Args_list ["x"],
-                                                               Var "x"));
+                                                      (Args_list ["x"],
+                                                       Var "x");
                                                     Apply (Var "list",
                                                            [Integer 10])])]))
               default_empty_alist = Int 10)
   and b8 = (candidate (Apply (Var "APPLY",
                               [Var "APPLY"; Apply (Var "list",
                                                    [Lambda_abstraction
-                                                      (Lambda (Args_list [],
-                                                               Integer 1)); Apply (Var "list",
-                                                                                   [])])]))
+                                                      (Args_list [],
+                                                       Integer 1); Apply (Var "list",
+                                                                          [])])]))
               default_empty_alist = Int 1)
   and b9 = (candidate (Apply (Var "APPLY",
                               [Var "APPLY"; Apply (Var "list",
                                                    [Lambda_abstraction
-                                                      (Lambda (Args_list ["a"; "b"],
-                                                               Apply (Var "+",
-                                                                      [Var "a"; Apply (Var "+",
-                                                                                       [Var "b"; Integer 1])])));
+                                                      (Args_list ["a"; "b"],
+                                                       Apply (Var "+",
+                                                              [Var "a"; Apply (Var "+",
+                                                                               [Var "b"; Integer 1])]));
                                                     Apply (Var "list",
                                                            [Integer 10; Integer 20])])]))
               default_empty_alist = Int 31)
@@ -868,37 +851,37 @@ let test_APPLY_eval_cps candidate =
                                [Integer 1; Apply (Var "APPLY",
                                                   [Var "CWCC"; Apply (Var "list",
                                                                       [Lambda_abstraction
-                                                                         (Lambda (Args_list ["k"],
-                                                                                  Integer 10))])])]))
+                                                                         (Args_list ["k"],
+                                                                          Integer 10)])])]))
                default_empty_alist = Int 11)
   and b11 = (candidate (Apply (Var "+",
                                [Integer 1; Apply (Var "APPLY",
                                                   [Var "CWCC"; Apply (Var "list",
                                                                       [Lambda_abstraction
-                                                                         (Lambda (Args_list ["k"],
-                                                                                  Apply (Var "k",
-                                                                                         [Integer 10])))])])]))
+                                                                         (Args_list ["k"],
+                                                                          Apply (Var "k",
+                                                                                 [Integer 10]))])])]))
                default_empty_alist  = Int 11)
   and b12 = (candidate (Apply (Var "+",
                                [Integer 1; Apply (Var "APPLY",
                                                   [Var "CWCC"; Apply (Var "list",
                                                                       [Lambda_abstraction
-                                                                         (Lambda (Args_list ["k"],
-                                                                                  Apply (Var "k",
-                                                                                         [Integer 10])))])])]))
-               default_empty_alist  = Int 11)
-  and b13 = (candidate (Apply (Var "+",
-                               [Integer 1; Apply (Var "APPLY",
-                                                  [Var "CWCC"; Apply (Var "list",
-                                                                      [Lambda_abstraction
-                                                                         (Lambda (Args_list ["k"],
-                                                                                  Apply (Var "/",
-                                                                                         [Apply (Var "k",
-                                                                                                 [Integer 10]);
-                                                                                          Integer 0])))])])]))
-               default_empty_alist  = Int 11)
-          
-  in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13;;
+                                                                         (Args_list ["k"],
+                                                                          Apply (Var "k",
+                                                                                 [Integer 10]))])])]))
+                          default_empty_alist  = Int 11)
+            and b13 = (candidate (Apply (Var "+",
+                                         [Integer 1; Apply (Var "APPLY",
+                                                            [Var "CWCC"; Apply (Var "list",
+                                                                                [Lambda_abstraction
+                                                                                   (Args_list ["k"],
+                                                                                    Apply (Var "/",
+                                                                                           [Apply (Var "k",
+                                                                                                   [Integer 10]);
+                                                                                            Integer 0]))])])]))
+                         default_empty_alist  = Int 11)
+                    
+             in b0 && b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11 && b12 && b13;;
 
 let test_APPLY_error_eval_cps candidate =
   let b0 = (try ignore (candidate (Apply (Var "APPLY",
@@ -944,56 +927,56 @@ let test_ccc_eval_cps candidate =
 fun v -> v + 10 *)
   let b0 = (candidate (Apply (Var "+",
                               [Integer 10; Apply (Var "CWCC",
-                                                  [Lambda_abstraction (Lambda
-                                                                         (Args_list ["k"],
-                                                                          Integer 1))])]))
+                                                  [Lambda_abstraction 
+                                                     (Args_list ["k"],
+                                                      Integer 1)])]))
               default_empty_alist = Int 11)
          
   and b1 = (candidate (Apply (Var "+",
                               [Integer 10; Apply (Var "CWCC",
-                                                  [Lambda_abstraction (Lambda
-                                                                         (Args_list ["k"],
-                                                                          Apply (Var "k",
-                                                                                 [Integer 1])))])]))
+                                                  [Lambda_abstraction 
+                                                     (Args_list ["k"],
+                                                      Apply (Var "k",
+                                                             [Integer 1]))])]))
               default_empty_alist = Int 11)
   (* The division by zero is not triggered because the application of the captured continuation k to 1 will still yield 11, leaving the division by 0 untriggered *)       
   and b2 = (candidate (Apply (Var "+",
                               [Integer 10; Apply (Var "CWCC",
-                                                  [Lambda_abstraction (Lambda
-                                                                         (Args_list ["k"],
-                                                                          Apply (Var "/",
-                                                                                 [Apply (Var "k",
-                                                                                         [Integer 1]);
-                                                                                  Integer 0])))])]))
+                                                  [Lambda_abstraction 
+                                                     (Args_list ["k"],
+                                                      Apply (Var "/",
+                                                             [Apply (Var "k",
+                                                                     [Integer 1]);
+                                                              Integer 0]))])]))
               default_empty_alist = Int 11)
   and b3 = (candidate (Apply (Var "+",
                               [Integer 10; Apply (Var "CWCC",
-                                                  [Lambda_abstraction (Lambda
-                                                                         (Args_list ["k"],
-                                                                          Apply (Var "+",
-                                                                                 [Apply (Var "k",
-                                                                                         [Integer 1]);
-                                                                                  Apply(Var "k",
-                                                                                        [Integer 100])])))])]))
+                                                  [Lambda_abstraction 
+                                                     (Args_list ["k"],
+                                                      Apply (Var "+",
+                                                             [Apply (Var "k",
+                                                                     [Integer 1]);
+                                                              Apply(Var "k",
+                                                                    [Integer 100])]))])]))
               default_empty_alist = Int 11)
   (* Other original examples *)
   and b4 = (candidate (Apply (Var "/",
                               [Integer 50; Apply (Var "CWCC",
-                                                  [Lambda_abstraction (Lambda
-                                                                         (Args_list ["k"],
-                                                                          Apply (Var "+",
-                                                                                 [Integer 0;
-                                                                                  Apply (Var "k",
-                                                                                         [Integer 25])])))])]))
+                                                  [Lambda_abstraction 
+                                                     (Args_list ["k"],
+                                                      Apply (Var "+",
+                                                             [Integer 0;
+                                                              Apply (Var "k",
+                                                                     [Integer 25])]))])]))
               default_empty_alist = Int 2)
   and b5 = (candidate (Apply (Var "*",
                               [Integer 10; Apply (Var "CWCC",
-                                                  [Lambda_abstraction (Lambda
-                                                                         (Args_list ["k"],
-                                                                          Apply (Var "+",
-                                                                                 [Integer 0;
-                                                                                  Apply (Var "k",
-                                                                                         [Integer 25])])))])]))
+                                                  [Lambda_abstraction 
+                                                     (Args_list ["k"],
+                                                      Apply (Var "+",
+                                                             [Integer 0;
+                                                              Apply (Var "k",
+                                                                     [Integer 25])]))])]))
               default_empty_alist = Int 250)                                             
   in b0 && b1 && b2 && b3 && b4 && b5;;
 
@@ -1002,9 +985,9 @@ let test_ccc_error_eval_cps candidate =
   let b0 = (try ignore (candidate (Apply (Var "CWCC",
                                           [Apply (Var "APPLY",
                                                   [Lambda_abstraction
-                                                     (Lambda (Args_list ["x"],
+                                                      (Args_list ["x"],
                                                               Apply (Var "+",
-                                                                     [Var "x"; Integer 5]))); Apply (Var "list",
+                                                                     [Var "x"; Integer 5])); Apply (Var "list",
                                                                                                      [Integer 3])])]))
                           default_empty_alist);
                 failwith "Error not occurring" with Interpreter_cps.Error("Error in CWCC: Not a procedure: 8") -> ())
@@ -1012,9 +995,9 @@ let test_ccc_error_eval_cps candidate =
                                           [Integer 5; Apply (Var "CWCC",
                                                              [Apply (Var "APPLY",
                                                                      [Lambda_abstraction
-                                                                        (Lambda (Args_list ["x"],
-                                                                                 Apply (Var "+",
-                                                                                        [Var "x"; Integer 5])));
+                                                                        (Args_list ["x"],
+                                                                         Apply (Var "+",
+                                                                                [Var "x"; Integer 5]));
                                                                       Apply(Var "list",
                                                                             [Integer 3])])])]))
                           default_empty_alist);
@@ -1027,41 +1010,41 @@ let test_ccc_error_eval_cps candidate =
                 failwith "Error not occurring" with Interpreter_cps.Error("Error in CWCC: Not a procedure: Special Value APPLY") -> ())
   and b3 = (try ignore (candidate (Apply (Var "+",
                                           [Integer 5; Apply (Var "CWCC",
-                                                             [Lambda_abstraction (Lambda
-                                                                                    (Args_list ["k"],
-                                                                                     Apply (Var "/",
-                                                                                            [Apply (Var "k",
-                                                                                                    [Integer 1]);
-                                                                                             Integer 0])));
+                                                             [Lambda_abstraction 
+                                                                (Args_list ["k"],
+                                                                 Apply (Var "/",
+                                                                        [Apply (Var "k",
+                                                                                [Integer 1]);
+                                                                         Integer 0]));
                                                               Integer 5])]))
                           default_empty_alist);
                 failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to call (CWCC [Closure function; 5])") ->())
   and b4 = (try ignore (candidate (Apply (Var "+",
                                           [Integer 5; Apply (Var "CWCC",
-                                                             [Lambda_abstraction (Lambda
-                                                                                    (Args_list ["k"],
-                                                                                     Apply (Var "/",
-                                                                                            [Apply (Var "k",
-                                                                                                    [Integer 1]);
-                                                                                             Integer 0])));
+                                                             [Lambda_abstraction 
+                                                                (Args_list ["k"],
+                                                                 Apply (Var "/",
+                                                                        [Apply (Var "k",
+                                                                                [Integer 1]);
+                                                                         Integer 0]));
                                                               Integer 5; Bool false])]))
                           default_empty_alist);
                 failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to call (CWCC [Closure function; 5; false])") ->())
   and b5 = (try ignore (candidate (Apply (Var "+",
                                           [Integer 5; Apply (Var "CWCC",
-                                                             [Lambda_abstraction (Lambda
-                                                                                    (Args_list ["k"],
-                                                                                     Apply (Var "/",
-                                                                                            [Apply (Var "k",
-                                                                                                    [Integer 1; Integer 2]); Integer 0])))])]))
+                                                             [Lambda_abstraction
+                                                                (Args_list ["k"],
+                                                                 Apply (Var "/",
+                                                                        [Apply (Var "k",
+                                                                                [Integer 1; Integer 2]); Integer 0]))])]))
                           default_empty_alist);
                 failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to captured continuation [1; 2]") ->())
   and b6 = (try ignore (candidate (Apply (Var "+",
                                           [Integer 5; Apply (Var "CWCC",
-                                                             [Lambda_abstraction (Lambda
-                                                                                    (Args_list ["k"],
-                                                                                     Apply (Var "k",
-                                                                                            [])))])]))
+                                                             [Lambda_abstraction 
+                                                                (Args_list ["k"],
+                                                                 Apply (Var "k",
+                                                                        []))])]))
                           default_empty_alist);
                 failwith "Error not occurring" with Interpreter_cps.Error("Incorrect argument count to captured continuation []") ->())
                                                                                      

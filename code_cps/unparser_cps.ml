@@ -97,6 +97,8 @@ let show_exp v =
       Printf.sprintf "Let-rec"
     |Let(_) ->
       Printf.sprintf "Let"
+    |Quote _ ->
+      Printf.sprintf "Quote expression"
   end
 
 (* Defining the unparsers for exp_val *)
@@ -174,6 +176,8 @@ let rec show_exp_val v =
       "[]"
     |Recursive_closure _ ->
       "Recursive closure function"
+    |Symbol n ->
+      Printf.sprintf "Symbol %s" (show_string n)
     |APPLY  ->
       "Special Value APPLY"
     |CWCC ->

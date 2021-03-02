@@ -11,12 +11,10 @@ type exp =
   |Var_rec of name * int (* Variable recursive *)
   |If of exp * exp * exp (* If expression *)
   |Let of (name * exp) list * exp (* Let expression *)
-  |Let_rec of (name * lambda_abstraction) list * exp (* Let rec expression *)
-  (* |Quote of quotation (* Quote expression *) *)
-  |Lambda_abstraction of lambda_abstraction (* Lambda abstraction *)
+  |Let_rec of (name * (lambda_formals * exp)) list * exp (* Let rec expression *)
+  |Quote of exp
+  |Lambda_abstraction of lambda_formals * exp  (* Lambda abstraction *)
   |Apply of exp * exp list (* Apply expression *)
-and lambda_abstraction =
-  |Lambda of lambda_formals * exp
 and lambda_formals =
   |Args_list of name list
   (* For (lambda (x y z. extras) ... ) *)
@@ -45,6 +43,7 @@ type exp_val =
   |CWCC (* Var "CWCC" is bound to this in the initial environment *)
   |Null (* empty list *)
   |Recursive_closure of recur_star
+  |Symbol of name
 and recur_star =
   |Recur_star of (recur_star -> exp_val list -> (exp_val -> exp_val) -> exp_val) list
   
