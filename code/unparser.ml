@@ -1,3 +1,4 @@
+open Utils.Syntax
 open Ast
    
 exception Error of string   

@@ -7,6 +7,7 @@
 
 (* To do: 1) Finish draft on recursion *)
 
+open Utils.Syntax
 open Ast
 open Interpreter_essentials 
 open Unparser

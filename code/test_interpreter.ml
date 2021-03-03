@@ -1,12 +1,9 @@
+open Utils.Syntax
 open Ast
 open Interpreter
 open Interpreter_essentials
 open Unparser
 
-(* TO ADD: Tests that test for lambda abstraction that is variadic and mixed for let rec expression. *)
-   
-(* Testing for error: If the correct error is raised, test returns unit meaning that there is no exception raised. *)
-   
 exception Not_implemented_yet
 
 (* Testing the eval function *)

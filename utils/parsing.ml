@@ -3,42 +3,8 @@
 (* Singapore, Sun 28 Feb 2021 & Mon 02 Mar 2021 *)
 
 (* ********** *)
-
-module Wayne =
-  struct
-    type name = string
-                  
-    type arg_name = Arg of name
-                             
-    type exp =
-      |Integer of int (* Integer *)
-      |Bool of bool (* Boolean *)
-      |Char of char (* Character *)
-      |Str of string (* String *)
-      |Var of name (* Variable *) (* Names denoting predefined procedures *)
-      |Var_rec of name * int (* Variable recursive *)
-      |If of exp * exp * exp (* If expression *)
-      |Let of (name * exp) list * exp (* Let expression *)
-      |Let_rec of (name * (lambda_formals * exp)) list * exp (* Let rec expression *)
-      |Quote of exp (* <--- *)
-      |Lambda_abstraction of lambda_formals * exp (* Lambda abstraction *)
-      |Apply of exp * exp list (* Apply expression *)
-     and lambda_formals =
-       |Args_list of name list
-       (* For (lambda (x y z. extras) ... ) *)
-       |Args_improper_list of name list * name
-       (* For variadic procedures *)
-       |Args of name
-
-    type top_level_form =
-      |Define of name * exp
-      |Exp of exp
-
-    type prog =
-      |Prog of top_level_form list
-  end;;
-
-(* ********** *)
+open Lexing
+open Syntax
 
 module Olivier =
   struct
@@ -108,12 +74,12 @@ module Olivier =
          if is_a_keyword s
          then raise (Imparsable "keyword out of place")
          else (Name s, ts')
-      | DOT :: ts' ->
+      | DOT :: _ ->
          raise (Imparsable "dot out of place")
       | QUOTE :: ts' ->
          let (e, ts'') = top ts'
          in (Quote e, ts'')
-      | RP :: ts' ->
+      | RP :: _ ->
          raise (Imparsable "close parenthesis out of place")
       | LP :: ts' ->
          visit_LP ts'
@@ -323,7 +289,7 @@ module Olivier =
       match top ts with
       | (e, []) ->
          Expression e
-      | (e, ts') ->
+      | (_, ts') ->
          let () = Printf.printf "extra tokens on top: %s\n" (unparse_lexemes ts')
          in raise (Imparsable "extra tokens");;
 
@@ -333,7 +299,7 @@ module Olivier =
          if is_a_keyword s
          then raise (Imparsable "keyword in a toplevel definition")
          else (match top ts' with
-               | (e, RP :: nil) ->
+               | (e, RP :: []) ->
                   Definition (s, e)
                | _ ->
                   raise (Imparsable "ill-ending toplevel definition"))
@@ -366,11 +332,11 @@ module Parse_Scheme_toplevel_form =
     let remap_formals formals =
       match formals with
       | Olivier.Single_formal s ->
-         Wayne.Args s
+         Args s
       | Olivier.Proper_formals ss ->
-         Wayne.Args_list ss
+         Args_list ss
       | Olivier.Improper_formals (ss, s) ->
-         Wayne.Args_improper_list (ss, s);;
+         Args_improper_list (ss, s);;
 
     let extend_env_formals formals r =
       match formals with
@@ -388,32 +354,32 @@ module Parse_Scheme_toplevel_form =
     let rec remap_expression e r =
       match e with
       | Olivier.True ->
-         Wayne.Bool true
+         Bool true
       | Olivier.False ->
-         Wayne.Bool false
+         Bool false
       | Olivier.Int n ->
-         Wayne.Integer n
+         Integer n
       | Olivier.Char c ->
-         Wayne.Char c
+         Char c
       | Olivier.String s ->
-         Wayne.Str s
+         Str s
       | Olivier.Name s ->
          (match declared_in_letrecp s r with
           | None ->
-             Wayne.Var s
+             Var s
           | Some offset ->
-             Wayne.Var_rec (s, offset))
+             Var_rec (s, offset))
       | Olivier.Quote e ->
-         Wayne.Quote (remap_expression e r)
+         Quote (remap_expression e r)
       | Olivier.If (test, consequent, alternative) ->
-         Wayne.If (remap_expression test r,
+         If (remap_expression test r,
                    remap_expression consequent r,
                    remap_expression alternative r)
       | Olivier.Lambda (formals, body) ->
-         Wayne.Lambda_abstraction (remap_formals formals, remap_expression body (extend_env_formals formals r))
+         Lambda_abstraction (remap_formals formals, remap_expression body (extend_env_formals formals r))
       | Olivier.Let (bindings, body) ->
          let names = List.map (fun (s, _) -> s) bindings
-         in Wayne.Let (List.map (fun (s, e) ->
+         in Let (List.map (fun (s, e) ->
                                   (s, remap_expression e r))
                                 bindings,
                        remap_expression body (List.fold_right (fun x r -> ((x, None) :: r))
@@ -421,21 +387,21 @@ module Parse_Scheme_toplevel_form =
                                                               r))
       | Olivier.Letrec (bindings, body) ->
          let names = List.map (fun (s, _) -> s) bindings
-         in let r' = List.fold_right (fun x c i -> ((x, Some i) :: c (i + 1))) names (fun i -> r) 0
-            in Wayne.Let_rec (List.map (fun (s, (formals, body)) ->
+         in let r' = List.fold_right (fun x c i -> ((x, Some i) :: c (i + 1))) names (fun _ -> r) 0
+            in Let_rec (List.map (fun (s, (formals, body)) ->
                                          (s, (remap_formals formals, remap_expression body (extend_env_formals formals r'))))
                                        bindings,
                               remap_expression body r')
       | Olivier.Apply (e0, es) ->
-         Wayne.Apply (remap_expression e0 r,
+         Apply (remap_expression e0 r,
                       List.map (fun e -> remap_expression e r) es);;
 
     let remap_toplevel_form tf =
       match tf with
       | Olivier.Definition (s, e) ->
-         Wayne.Define (s, remap_expression e [])
+         Define (s, remap_expression e [])
       | Olivier.Expression e ->
-         Wayne.Exp (remap_expression e []);;
+         Exp (remap_expression e []);;
 
     let parse ts =
       remap_toplevel_form (Olivier.parse_top ts);;        

@@ -8,7 +8,7 @@
 (* To do: 1) Implement call-cc, 2) Finish draft on recursion *)
 
 (* FOR INTERPRETER IN CPS *)
-
+open Utils.Syntax
 open Ast_cps
 open Unparser_cps
 open Interpreter_essentials_cps

@@ -1,3 +1,4 @@
 (library
   (name code_cps)
+  (libraries utils)
   (modes byte native))

@@ -1,3 +1,4 @@
+open Utils.Syntax
 open Ast_cps
 open Interpreter_cps
 open Interpreter_essentials_cps

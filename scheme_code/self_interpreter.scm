@@ -1,3 +1,6 @@
+;;; self_interpreter.scm
+;;; Time-stamp: <2021-03-03 14:49:30 olivier>
+
 (define eval-cps
   (lambda (e r xs k)
     (cond
@@ -29,24 +32,26 @@
 			      (eval-cps (car (cdr es)) r xs k)
 			      (eval-cps (car (cdr (cdr es))) r xs k)))))
 	     ((equal? e0 'lambda)
-	      (let ((formals (car (cdr e0)))
-		    (body (car (cdr (cdr e0)))))
-		(k (trace-lambda "hello" (vs k)
-				 (eval-cps body
-					   (extend-env formals vs r)
-					   xs
-					   k)))))
+	      (let ((formals (car es))
+		    (body (car (cdr es))))
+		(k (lambda (vs k)
+                     (eval-cps body
+                               (extend-env formals vs r)
+                               xs
+                               k)))))
 	     ((equal? e0 'let)
-	      (evlet-cps (car (cdr e0))
-			 (car (cdr (cdr e0)))
+	      (evlet-cps (car es)
+			 (car (cdr es))
 			 r
 			 xs
 			 k))
 	     ((equal? e0 'letrec)
 	      (errorf 'eval-cps "Not implemented yet"))
+	     ((equal? e0 'quote)
+	      (k (car es)))
 	     (else
 	      (evlis-cps es r xs (lambda (vs)
-				   ((lookup-env e0 r) vs k)))))
+				   ((lookup e0 r) vs k)))))
 	    (eval-cps e0 r xs (lambda (v0)
 				(evlis-cps es r xs (lambda (vs)
 						     (v0 vs k))))))))
@@ -93,6 +98,8 @@
       (cons (cons xs vs) r))
      ((pair? xs)
       (extend-env-aux xs vs r))
+     ((null? xs)
+      r)
      (else
       (errorf 'extend-env "Illegal formals in extend-env")))))
 	
@@ -113,10 +120,116 @@
      (else
       (errorf 'extend-env-aux "Illegals formals in extend-env-aux")))))
 
-(define lookup-env
+(define lookup
   (lambda (x r)
     (if (null? r)
-	(errorf 'lookup-env "Unbound variable: ~s" x)
+	(errorf 'lookup "Unbound variable: ~s" x)
 	(if (equal? x (car (car r)))
 	    (cdr (car r))
-	    (lookup-env x (cdr r))))))
+	    (lookup x (cdr r))))))
+
+(define env-init
+  (list
+   (cons 'car (lambda (vs k)
+                (k (car (car vs)))))
+   (cons 'cdr (lambda (vs k)
+                (k (cdr (car vs)))))
+   (cons 'cons (lambda (vs k)
+                 (k (cons (car vs) (car (cdr vs))))))
+   (cons '+ (lambda (vs k)
+              (letrec ((loop (lambda (vs a)
+                               (if (null? vs)
+                                   (k a)
+                                   (loop (cdr vs) (+ (car vs) a))))))
+                (loop vs 0))))
+   (cons '- (lambda (vs k)
+              (k (- (car vs) (car (cdr vs))))))
+   (cons 'not (lambda (vs k)
+		(k (not (car vs)))))
+   (cons 'errorf (lambda (vs k)
+		   (apply errorf vs)))
+   ))
+
+(define interpret
+  (lambda (e)
+    (eval-cps e env-init '() (lambda (v) v))))
+
+;;; > (interpret 0)
+;;; 0
+;;; > (interpret (if #t 1 2))
+;;; 1
+;;; > (interpret (if #f 1 2))
+;;; 2
+;;; > (interpret (if 0 1 2))
+;;; 1
+;;; > (interpret '((lambda (x) x) 1))
+;;; 1
+;;; > (interpret '((lambda (x y) x) 1 2))
+;;; 1
+;;; > (interpret '((lambda (x y) y) 1 2))
+;;; 2
+;;; > (interpret '((lambda xs xs) 1 2))
+;;; (1 2)
+;;; > (interpret '((lambda (x . xs) xs) 1 2 3))
+;;; (2 3)
+;;; > (interpret '(let () 2))
+;;; 2
+;;; > (interpret '(let ((x 1)) x))
+;;; 1
+;;; > (interpret '(let ((x 1) (y 2)) x))
+;;; 1
+;;; > (interpret '(let ((x 1) (y 2)) y))
+;;; 2
+;;; > 
+
+(define test
+  (lambda ()
+    (begin
+      (unless (equal? (interpret 0) 0)
+        (printf "failed: (interpret 0)\n"))
+      (unless (equal? (interpret '(if #t 1 2)) 1)
+        (printf "failed: (interpret (if #t 1 2))\n"))
+      (unless (equal? (interpret '(if #f 1 2)) 2)
+        (printf "failed: (interpret (if #f 1 2))\n"))
+      (unless (equal? (interpret '(if 0 1 2)) 1)
+        (printf "failed: (interpret (interpret (if 0 1 2)))\n"))
+      (unless (equal? (interpret (interpret '((lambda (x) x) 1))) 1)
+        (printf "failed: (interpret '((lambda (x) x) 1))\n"))
+      (unless (equal? (interpret '((lambda (x y) x) 1 2)) 1)
+        (printf "failed: (interpret '((lambda (x y) x) 1 2))\n"))
+      (unless (equal? (interpret '((lambda (x y) x) 1 2)) 1)
+        (printf "failed: (interpret ((lambda (x y) x) 1 2))\n"))
+      (unless (equal? (interpret '((lambda (x y) y) 1 2)) 2)
+        (printf "failed: (interpret ((lambda (x y) y) 1 2))\n"))
+      (unless (equal? (interpret '((lambda xs xs) 1 2)) '(1 2))
+        (printf "failed: (interpret '((lambda xs xs) 1 2))\n"))
+      (unless (equal? (interpret '((lambda (x . xs) xs) 1 2 3)) '(2 3))
+        (printf "failed: (interpret '((lambda (x . xs) xs) 1 2 3))\n"))
+      (unless (equal? (interpret '(let () 2)) 2)
+        (printf "failed: (interpret '(let () 2))\n"))
+      (unless (equal? (interpret '(let ((x 1)) x)) 1)
+        (printf "failed: (interpret '(let ((x 1)) x))\n"))
+      (unless (equal? (interpret (interpret '(let ((x 1) (y 2)) x))) 1)
+        (printf "failed: (interpret (interpret '(let ((x 1) (y 2)) x)))\n"))
+      (unless (equal? (interpret '(let ((x 1) (y 2)) y)) 2)
+        (printf "failed: (interpret '(let ((x 1) (y 2)) y))\n"))
+      (unless (equal? (interpret '(+)) 0)
+        (printf "failed: (interpret '(+))\n"))
+      (unless (equal? (interpret '(+ 1)) 1)
+        (printf "failed: (interpret '(+ 1))\n"))
+      (unless (equal? (interpret '(+ 1 10)) 11)
+        (printf "failed: (interpret '(+ 1 10))\n"))
+      (unless (equal? (interpret '(+ 1 10 100)) 111)
+	      (printf "failed: (interpret '(+ 1 10 100))\n"))
+      (unless (equal? (interpret '(car (cons 1 2))) 1)
+        (printf "failed: (interpret '(car (cons 1 2)))\n"))
+      (unless (equal? (interpret '(cdr (cons 1 2))) '2)
+        (printf "failed: (interpret '(cdr (cons 1 2)))\n"))
+      (unless (equal? (interpret '(car '(1 2))) 1)
+        (printf "failed: (interpret '(car '(1 2)))\n"))
+      (unless (equal? (interpret '(cdr '(1 2))) '(2))
+        (printf "failed: (interpret '(cdr '(1 2)))\n"))
+      )))
+
+;;; To add all of the primitives that the interpreter itself uses inside the env-init, add cond form to interpret
+;;; inside the interpreter, and since we have to interpret files like this as well, we need to handle define too.

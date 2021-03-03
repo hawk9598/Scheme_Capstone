@@ -40,7 +40,7 @@ module Quotations =
       |Null (* empty list *)
       |Recursive_closure of recur_star
       |Symbol of name    (* <--- new, and necessary to represent variables *)
-     and recur_star =
+     and recur_star = 
        |Recur_star of (recur_star -> exp_val list -> exp_val) list
 
     exception Not_implemented;;
@@ -57,7 +57,7 @@ module Quotations =
          String s
       | Var x ->
          Symbol x
-      | Var_rec (x, i) ->
+      | Var_rec (x, _) ->
          Symbol x
       | If (test, consequent, alternative) ->
          Pair (Symbol "if",
@@ -124,7 +124,7 @@ module Quotations =
                            Null)),
                eval_quoted_letrec_bindings bs')
 
-    let eval e r =
+    let eval e =
       match e with
       | Quote e' ->
          eval_quoted_expression e'

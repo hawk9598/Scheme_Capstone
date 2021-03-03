@@ -1,3 +1,4 @@
+open Utils.Syntax
 open Ast_cps
    
 exception Error of string   
