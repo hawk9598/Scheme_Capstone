@@ -105,22 +105,7 @@ let lex cs =
                       | _ ->
                          scan (j + 1)
                in scan (i + 1)
-            | '-' ->
-               if i + 1 < length_cs
-               then let rec compute i n =
-                      if i = length_cs
-                      then INT (- n) :: []
-                      else let c = String.get cs i
-                           in if int_of_char '0' <= int_of_char c && int_of_char c <= int_of_char '9'
-                              then compute (i + 1) (10 * n + (int_of_char c - int_of_char '0'))
-                              else INT (- n) :: visit i
-                    in let c = String.get cs (i + 1)
-                       in if int_of_char '0' <= int_of_char c && int_of_char c <= int_of_char '9'
-                          then compute (i + 2) (int_of_char c - int_of_char '0')
-                          else (Printf.printf "Incorrect string \"%s\" at index %d\n" cs i;
-                                raise Incorrect_string)
-               else (Printf.printf "Incorrect string \"%s\" at index %d\n" cs i;
-                     raise Incorrect_string)
+                
             | c ->
                let rec compute i n =
                  if i = length_cs
@@ -144,7 +129,29 @@ let lex cs =
                          scan (j + 1)
                in if int_of_char '0' <= int_of_char c && int_of_char c <= int_of_char '9'
                   then compute (i + 1) (int_of_char c - int_of_char '0')
-                  else scan (i + 1)
+                  else
+                    match c with
+                    (* Must consider the special case where - is used to get negative of a number *)
+                    |'-' -> if i + 1 < length_cs
+                            then let rec compute_neg i n =
+                                   if i = length_cs
+                                   then INT (- n) :: []
+                                   else let c = String.get cs i
+                                        in if int_of_char '0' <= int_of_char c && int_of_char c <= int_of_char '9'
+                                           then compute_neg (i + 1) (10 * n + (int_of_char c - int_of_char '0'))
+                                           else INT (- n) :: visit i
+                                 in let c' = String.get cs (i + 1)
+                                    in if int_of_char '0' <= int_of_char c' && int_of_char c' <= int_of_char '9'
+                                       then compute_neg (i + 2) (int_of_char c' - int_of_char '0')
+                                       else
+                                         match c' with
+                                         (* this is probably the case where - is a primitive due to the next character being a space *)
+                                         |' ' -> scan (i + 1)
+                                         |_ -> (Printf.printf "Incorrect string \"%s\" at index %d\n" cs i;
+                                             raise Incorrect_string)
+                            else (Printf.printf "Incorrect string \"%s\" at index %d\n" cs i;
+                                  raise Incorrect_string)
+                    |_ -> scan (i + 1)
   in visit 0;;
 
 (*

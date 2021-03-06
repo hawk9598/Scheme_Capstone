@@ -1,5 +1,4 @@
 ;;; self_interpreter.scm
-;;; Time-stamp: <2021-03-03 14:49:30 olivier>
 
 (define eval-cps
   (lambda (e r xs k)
@@ -347,8 +346,42 @@
 	      (printf "failed: (interpret '(car '(1 2)))\n"))
       (unless (equal? (interpret '(cdr '(1 2))) '(2))
 	      (printf "failed: (interpret '(cdr '(1 2)))\n"))
-      ;;; TO DO: Add tests for call/cc and apply and list
+      (unless (equal? (interpret '(list 1 2 3)) '(1 2 3))
+	      (printf "failed: (interpret '(list 1 2 3))\n"))
+      (unless (equal? (interpret '(list (list 1 2 3))) '((1 2 3)))
+	      (printf "failed: (interpret '(list (list 1 2 3)))\n"))
+      ;;; Testing for call/cc
+      (unless (equal? (interpret '(+ 5 (call/cc (lambda (k) 10)))) 15)
+	      (printf "failed: (interpret '(+ 5 (call/cc (lambda (k) 10))))\n"))
+      (unless (equal? (interpret '(+ 5 (call/cc (lambda (k) (k 10))))) 15)
+	      (printf "failed: (interpret '(+ 5 (call/cc (lambda (k) (k 10)))))\n"))
+      (unless (equal? (interpret '(+ 5 (call/cc (lambda (k) (/ (k 10) 0))))) 15)
+	      (printf "failed: (interpret '(+ 5 (call/cc (lambda (k) (/ (k 10) 0)))))\n"))
+      (unless (equal? (interpret '(/ 50 (call/cc (lambda (k) (+ 0 (k 25)))))) 2)
+	      (printf "failed: (interpret '(/ 50 (call/cc (lambda (k) (+ 0 (k 25))))))\n"))
+      ;;; Testing for simple cases of apply
+      (unless (equal? (interpret '(apply + '(1 2 3))) 6)
+	      (printf "failed: (interpret '(apply + '(1 2 3)))\n"))
+      (unless (equal? (interpret '(apply (lambda (x) x) '(10))) 10)
+	      (printf "failed: (interpret '(apply (lambda (x) x) '(10)))\n"))
+      (unless (equal? (interpret '(apply * '(10 5 -1))) -50)
+	      (printf "failed: (interpret: '(apply * '(10 5 -1)))\n"))
+      (unless (equal? (interpret '(apply (lambda () 1) '())) 1)
+	      (printf "failed: (interpret: '(apply (lambda () 1) '()))\n"))
+      ;;; Testing for more complex cases of apply
+      (unless (equal? (interpret '(apply apply (list + (list 5 3 1)))) 9)
+	      (printf "failed: (interpret: '(apply apply (list + (list 5 3 1))))\n"))
+      (unless (equal? (interpret '(apply apply (list (lambda (a b) (+ a (+ b 1))) (list 10 20)))) 31)
+	      (printf "failed: (interpret '(apply apply (list (lambda (a b) (+ a (+ b 1))) (list 10 20))))\n"))
+      (unless (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) 10))))) 11)
+	      (printf "failed: (interpret (+ 1 (apply call/cc (list (lambda (k) 10)))))\n"))
+      (unless (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10)))))) 11)
+	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10))))))\n"))
+      (unless (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0)))))) 11)
+	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0))))))\n"))
+	    
       )))
 
-;;; To add cond form to interpret
 ;;; inside the interpreter, and since we have to interpret files like this as well, we need to handle define too.
+
+;;; talk about how, at the right level of abstraction, implementing stuff is easier

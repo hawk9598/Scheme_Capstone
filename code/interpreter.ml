@@ -7,7 +7,10 @@
 
 (* To do: 1) Finish draft on recursion *)
 
-open Utils.Syntax
+open Utils
+open Syntax
+open Lexing
+open Parsing
 open Ast
 open Interpreter_essentials 
 open Unparser
@@ -257,3 +260,20 @@ and evlis exps env =
       let v = eval exp env
       in v :: evlis exps' env
   end;;
+
+let expression_matcher toplevelform =
+  begin
+    match toplevelform with
+    |Exp e -> e
+    |Define (_, e) ->
+      e
+  end
+
+let get_final_parsed_exp s =
+  expression_matcher (Parse_Scheme_toplevel_form.parse (lex s))
+
+let interpreter exp =
+  eval exp default_empty_alist
+
+let interpreter_on_scheme_input s =
+  eval (get_final_parsed_exp s) default_empty_alist

@@ -1,8 +1,7 @@
 # Scheme_Capstone
+This repository contains all files involved in the creation of a Scheme self-interpreter for my Capstone project.
 
-### This repository contains all files involved in the creation of a Scheme self-interpreter for my Capstone project.
-
-### Repository contents:
+## Repository contents:
 
 1) /code/: Contains the interpreter implemented in direct style (interpreter.ml), the auxiliary functions used in the interpreter as well as the environment definition (interpreter_essentials.ml), the unparser for error raising (unparser.ml), the definition of Primitive functions or the default functions that exist in the environment when the interpreter is loaded (primitives.ml) as well as the test functions for my interpreter, interpreter auxiliary functions and primitive functions.
 
@@ -12,10 +11,39 @@
 
 4) /scheme_code/: Contains the Scheme self-interpreter file.
 
-### Progress till now:
+## Progress till now:
 
 1) Implemented an intepreter for Scheme in OCaml written in Direct Style, and completed testing.
 2) Implemented an intepreter for Scheme in OCaml written in Continuation Passing Style, implemented call-cc and apply, and completed testing.
 3) Added support for quotations in both the interpreter written in Direct Style and the interpreter written in Continuation Passing Style, but will have to add testing for this.
 4) Added a lexer and parser (courtesy of my supervisor) to be used with the interpreter for Scheme written in OCaml, and will add tests involving actual Scheme code for the two aforementioned interpreters.
 5) Started on self-interpreter in Scheme, and implemented some of the auxiliary functions required.
+
+## Instructions to run the interpreters
+
+### For the self-interpreter
+In Scheme, just load the file containing the self interpreter and run any example quoted Scheme program
+as input to the interpreter:
+```
+> (load "file_path/self_interpreter.scm")
+> (interpret '(+ 1 2))
+3
+```
+### For the Scheme interpreters written in OCaml 
+In the terminal where the directory is set to the Scheme_Capstone repository's path, run the command `dune utop`. Then,
+run the following commands to run the interpreters on Scheme code (input as strings):
+
+For the interpreter written in Direct Style:
+```
+# open Code;;
+# open Interpreter;;
+# interpreter_on_scheme_input "(+ 5 5)";;
+- : Ast.exp_val = Code.Ast.Int 10
+```
+For the interpreter written in Continuation Passing Style:
+```
+# open Code_cps;;
+# open Interpreter_cps;;
+# interpreter_cps_on_scheme_input "(+ 5 5)";;
+- : Ast_cps.exp_val = Code_cps.Ast_cps.Int 10
+```
