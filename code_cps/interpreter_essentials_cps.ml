@@ -60,8 +60,8 @@ let default_empty_alist =
     ("string-length?", Primitive internal_str_length);
     ("string",  Primitive internal_char_to_str);
     ("string-ref", Primitive internal_str_ref);
-    ("CWCC", CWCC);
-    ("APPLY", APPLY);
+    ("call/cc", CWCC);
+    ("apply", APPLY);
   ]
         
 (* Defining functions that help to extend the environment bindings *)

@@ -8,7 +8,10 @@
 (* To do: 1) Implement call-cc, 2) Finish draft on recursion *)
 
 (* FOR INTERPRETER IN CPS *)
-open Utils.Syntax
+open Utils
+open Syntax
+open Lexing
+open Parsing
 open Ast_cps
 open Unparser_cps
 open Interpreter_essentials_cps
@@ -299,13 +302,13 @@ and applyapply vs k =
         |_ ->
           raise (Error
                    (Printf.sprintf
-                      "Error in APPLY: Not a procedure: %s"
+                      "Error in apply: Not a procedure: %s"
                       (show_exp_val v1)))
       end
     |_ ->
       raise (Error
                (Printf.sprintf 
-                  "Incorrect argument count in call (APPLY %s)"
+                  "Incorrect argument count in call (apply %s)"
                   (show_list show_exp_val vs)))
   end
 and applycallcc vs k =
@@ -358,12 +361,29 @@ and applycallcc vs k =
         |_ ->
           raise (Error
                    (Printf.sprintf
-                      "Error in CWCC: Not a procedure: %s"
+                      "Error in call/cc: Not a procedure: %s"
                       (show_exp_val v)))
          
       end
     |_ -> raise (Error
                    (Printf.sprintf
-                      "Incorrect argument count to call (CWCC %s)"
+                      "Incorrect argument count to call (call/cc %s)"
                       (show_list show_exp_val vs)))
   end
+
+let expression_matcher toplevelform =
+  begin
+    match toplevelform with
+    |Exp e -> e
+    |Define (_, e) ->
+      e
+  end
+
+let get_final_parsed_exp s =
+  expression_matcher (Parse_Scheme_toplevel_form.parse (lex s))
+
+let interpreter_cps exp =
+  eval_cps exp default_empty_alist (fun v -> v)
+
+let interpreter_cps_on_scheme_input s =
+  eval_cps (get_final_parsed_exp s) default_empty_alist (fun v -> v)

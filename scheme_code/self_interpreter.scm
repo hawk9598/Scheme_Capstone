@@ -385,3 +385,28 @@
 ;;; inside the interpreter, and since we have to interpret files like this as well, we need to handle define too.
 
 ;;; talk about how, at the right level of abstraction, implementing stuff is easier
+
+(define unparse-def-list
+  (lambda (xs r)
+    (letrec ((loop-name (lambda (xsp)
+			  (if (null? xsp)
+			      '()
+			      (if (equal? (car (car xsp)) 'define)
+				  (cons (car (cdr (car xsp))) (loop-name (cdr xsp)))
+				  (errorf 'loop-name "should be a list of definitions.")))))
+	     (loop-exp (lambda (xsp)
+			 (if (null? xsp)
+			     '()
+			     (if (equal? (car (car xsp)) 'define)
+				 (cons (interpret (car (cdr (cdr (car xsp))))) (loop-exp (cdr xsp)))
+				 (errorf 'loop-exp "should be a list of definitions."))))))
+      (let ((namelist (loop-name xs))
+	    (explist (loop-exp xs)))
+	(extend-env namelist explist r)))))
+
+;;; Example:
+			 
+;;; > (unparse-def-list '((define five 5)(define three 3)(define factorial (lambda (n) (if (= n 0) 1 (* n (factorial (- n 1))))))) '())
+;;;((five . 5)
+;;;  (three . 3)
+;;;  (factorial . #<procedure at self_interpreter.scm:679>))    
