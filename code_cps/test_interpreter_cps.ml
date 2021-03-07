@@ -1188,10 +1188,42 @@ let test_eval_cps_quote_non_base candidate =
                                 Null),
                           Pair (Pair (Symbol "factorial",
                                    Pair (Symbol "x", Null)),
+                                Null))))
+  (* Testing for implicit applications of lambda expressions *)
+  and b5 = (candidate (Quote ((Apply
+                                 ((Lambda_abstraction
+                                     (Args "x",
+                                      Apply (Var "sum_list",
+                                             [Var "x"]))),
+                                  [Integer 1; Integer 2]))))
+              default_empty_alist =
+              Pair
+                (Pair (Symbol "lambda",
+                       Pair (Symbol "x",
+                             Pair
+                               (Pair (Symbol "sum_list",
+                                      Pair (Symbol "x", Null)),
+                                Null))),
+                 Pair (Int 1,
+                       Pair (Int 2,
                              Null))))
+  (* Testing for lambda expressions *)
+  and b6 = (candidate (Quote (Lambda_abstraction
+                                (Args_list ["x"; "y"],
+                                 Apply (Var "+",
+                                        [Var "x"; Var "y"]))))
+              default_empty_alist = Pair (Symbol "lambda",
+                                          Pair
+                                            (Pair (Symbol "x",
+                                                   Pair (Symbol "y", Null)),
+                                             Pair
+                                               (Pair (Symbol "+",
+                                                      Pair (Symbol "x",
+                                                            Pair (Symbol "y", Null))),
+                                                Null))))
                                    
                                             
-  in b0 && b1 && b2 && b3 && b4;;
+  in b0 && b1 && b2 && b3 && b4 && b5 && b6;;
 
 (* Run the tests. *) 
 assert (test_eval_cps_integer eval_cps_with_cont);;
