@@ -1,6 +1,6 @@
 ;;; self_interpreter.scm
 
-(load "file_parser.scm")
+(load "~/home/Desktop/Yale NUS stuff/Y4S1/Capstone/Scheme_Capstone/scheme_code/file_parser.scm")
 
 (define eval-cps
   (lambda (e r xs g k)
@@ -63,7 +63,7 @@
                                                                  (loop (car cs) (cdr cs))))))))))
                 (loop (car es) (cdr es))))
 	     ((equal? e0 'letrec)
-	      (errorf 'eval-cps "Not implemented yet"))
+	       (eval-cps (macro-expand-letrec es) r xs g k))
 	     ((equal? e0 'quote)
 	      (k (car es)))
 	     (else
@@ -161,6 +161,29 @@
 	    (cdr (car r))
 	    (lookup x (cdr r) g)))))
 
+(define macro-expand-letrec
+  (lambda (es)
+    (let ((header (car es))
+          (body (car (cdr es))))
+      (let ((names (map car header)))
+        (cons '(lambda fs
+                 (let ((xs
+                        (internal-map1
+                         (lambda (fi)
+                           (lambda xs
+                             (apply fi
+                                    (internal-map1 (lambda (xi)
+                                                     (lambda args
+                                                       (apply (apply xi xs) args)))
+                                                   xs))))
+                         fs)))
+                   (apply (car xs) xs)))
+              (cons (list 'lambda (cons 'self names) body)
+                    (map (lambda (binding)
+                           (list 'lambda (cons 'self names)
+                                 (cadr binding)))
+                         header)))))))
+
 ;;; Defining initial environment which must contain all of the primitives used to define the interpreter too.
 (define env-init
   (list
@@ -234,51 +257,19 @@
               (k (= (car vs) (car (cdr vs))))))
    ))
 
-(define YcurryVar1Ap
-  (lambda fs
-    (let ((xs
-	   (map
-	    (lambda (fi)
-	      (lambda xs
-		(apply fi
-		       (map (lambda (xi)
-			      (lambda args
-				(apply (apply xi xs) args)))
-			    xs))))
-	    fs)))
-      (apply (car xs) xs))))
-      
 (define interpret
   (lambda (e g)
-    (eval-cps e '() '() g (lambda (v) v))))
+    (eval-cps '(lambda (f vs)
+                 (if (null? vs)
+                     '()
+                     (cons (f (car vs)) (internal-map1 f (cdr vs)))))
+              '()
+              '()
+              g
+              (lambda (internal-map1)
+                (eval-cps e '() '() (cons (cons 'internal-map1 internal-map1) g) (lambda (v) v))))))
 
-;;; > (interpret 0)
-;;; 0
-;;; > (interpret (if #t 1 2))
-;;; 1
-;;; > (interpret (if #f 1 2))
-;;; 2
-;;; > (interpret (if 0 1 2))
-;;; 1
-;;; > (interpret '((lambda (x) x) 1))
-;;; 1
-;;; > (interpret '((lambda (x y) x) 1 2))
-;;; 1
-;;; > (interpret '((lambda (x y) y) 1 2))
-;;; 2
-;;; > (interpret '((lambda xs xs) 1 2))
-;;; (1 2)
-;;; > (interpret '((lambda (x . xs) xs) 1 2 3))
-;;; (2 3)
-;;; > (interpret '(let () 2))
-;;; 2
-;;; > (interpret '(let ((x 1)) x))
-;;; 1
-;;; > (interpret '(let ((x 1) (y 2)) x))
-;;; 1
-;;; > (interpret '(let ((x 1) (y 2)) y))
-;;; 2
-;;; > 
+;;; Defining tests for the interpreter
 
 (define test
   (lambda (g)
@@ -416,7 +407,67 @@
 	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10))))) ~s)\n" g))
       (unless (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0))))) g) 11)
 	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0))))) ~s)\n" g))
-	    
+      ;;; Testing for letrec expressions
+
+      ;; Testing using factorial function
+      (unless (equal? (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 5)) g) 120)
+	      (printf "failed: (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 5)) ~s)\n" g))
+      (unless (equal? (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 7)) g) 5040)
+	      (printf "failed: (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 7)) ~s)\n" g))
+      
+      ;; Testing using ternary preternary postternary where result is expected to be #t
+      (unless (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (ternary 12)) g) #t)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(ternary 12)) ~s)\n" g))
+      (unless (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (preternary 5)) g) #t)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(preternary 5)) ~s)\n" g))
+      (unless (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (postternary 31)) g) #t)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(postternary 31)) ~s)\n" g))
+      
+      ;; Testing using ternary preternary postternary where result is expected to be #f
+      (unless (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (ternary 10)) g) #f)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(ternary 10)) ~s)\n" g))
+      (unless (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (preternary 21)) g) #f)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(preternary 21)) ~s)\n" g))
+      (unless (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (postternary 20)) g) #f)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(postternary 20)) ~s)\n" g))
+      
+      ;; Testing using even odd where result is expected to be #t
+      (unless (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					   (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (even 10)) g) #t)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(even 10)) ~s)\n" g))
+      (unless (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					   (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (odd 7)) g) #t)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(odd 7)) ~s)\n" g))
+
+      ;; Testing using even odd where result is expected to be #f
+      (unless (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					   (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (even 9)) g) #f)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(even 9)) ~s)\n" g))
+      (unless (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					   (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (odd 6)) g) #f)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(odd 6)) ~s)\n" g))
       )))
 
 (define test-not
@@ -555,8 +606,70 @@
 	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10))))) ~s)\n" g))
       (when   (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0))))) g) 11)
 	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0))))) ~s)\n" g))
-	    
-      ))) 
+      ;;; Testing for letrec expressions
+
+      ;; Testing using factorial function
+      (when   (equal? (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 5)) g) 120)
+	      (printf "failed: (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 5)) ~s)\n" g))
+      (when   (equal? (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 7)) g) 5040)
+	      (printf "failed: (interpret '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 7)) ~s)\n" g))
+      
+      ;; Testing using ternary preternary postternary where result is expected to be #t
+      (when   (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (ternary 12)) g) #t)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(ternary 12)) ~s)\n" g))
+      (when   (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (preternary 5)) g) #t)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(preternary 5)) ~s)\n" g))
+      (when   (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (postternary 31)) g) #t)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(postternary 31)) ~s)\n" g))
+      
+      ;; Testing using ternary preternary postternary where result is expected to be #f
+      (when   (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (ternary 10)) g) #f)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(ternary 10)) ~s)\n" g))
+      (when   (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (preternary 21)) g) #f)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(preternary 21)) ~s)\n" g))
+      (when   (equal? (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))
+					   (postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))
+					   (preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))
+				    (postternary 20)) g) #f)
+	      (printf "failed: (interpret '(letrec ((ternary (lambda (n) (if (= n 0) #t (preternary (- n 1)))))(postternary (lambda (n) (if (= n 0) #f (ternary (- n 1)))))(preternary (lambda (n) (if (= n 0) #f (postternary (- n 1))))))(postternary 20)) ~s)\n" g))
+
+      ;; Testing using even odd where result is expected to be #t
+      (when   (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					   (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (even 10)) g) #t)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(even 10)) ~s)\n" g))
+      (when   (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					   (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (odd 7)) g) #t)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(odd 7)) ~s)\n" g))
+
+      ;; Testing using even odd where result is expected to be #f
+      (when (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					 (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (even 9)) g) #f)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(even 9)) ~s)\n" g))
+      (when (equal? (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))
+					   (odd (lambda (n) (if (= n 0) #f (even (- n 1))))))
+				    (odd 6)) g) #f)
+	      (printf "failed: (interpret '(letrec ((even (lambda (n) (if (= n 0) #t (odd (- n 1)))))(odd (lambda (n) (if (= n 0) #t (even (- n 1))))))(odd 6)) ~s)\n" g))
+      )))
+
+;;; Defining the auxiliary functions that will be used to parse through list of definitions
 
 (define is-define?
   (lambda (expression)
@@ -593,6 +706,8 @@
           (loop (car dse) (cdr dse) '())
           (errorf 'run "improper input")))))
 
+;;; Testing the auxiliary functions
+
 ;;; Testing the is define function using simple examples
 (define test-is-define
   (lambda ()
@@ -622,13 +737,14 @@
 (define test-run-on-parsed-res
   (lambda ()
     (begin
-      (unless (equal? (run (file-parser "test_file_parser.scm")) "hello")
+      (unless (equal? (run (file-parser "~/home/Desktop/Yale NUS stuff/Y4S1/Capstone/Scheme_Capstone/scheme_code/test_file_parser.scm")) "hello")
 	      (printf "failed: (run (file-parser \"test_file_parser.scm\"))\n"))
       )))
 
 (define test-not-run-on-parsed-res
   (lambda ()
     (begin
-      (when (equal? (run (file-parser "test_file_parser.scm")) "hello")
+      (when (equal? (run (file-parser "~/home/Desktop/Yale NUS stuff/Y4S1/Capstone/Scheme_Capstone/scheme_code/test_file_parser.scm")) "hello")
 	      (printf "failed: (run (file-parser \"test_file_parser.scm\"))\n"))
       )))
+
