@@ -3,7 +3,7 @@
 (load "~/home/Desktop/Yale NUS stuff/Y4S1/Capstone/Scheme_Capstone/scheme_code/file_parser.scm")
 
 (define eval-cps
-  (lambda (e r xs g k)
+  (lambda (e r g k)
     (cond
      ((integer? e)
       (k e))
@@ -16,9 +16,7 @@
      ((null? e)
       (k e))
      ((symbol? e)
-      (if (member e xs)
-	  (k (lookup-rec e r))
-	  (k (lookup e r g))))
+      (k (lookup e r g)))
      ((pair? e)
       (let ((e0 (car e))
 	    (es (cdr e)))
@@ -27,68 +25,65 @@
 	     ((equal? e0 'if)
 	      (eval-cps (car es)
 			r
-			xs
-                        g
+			g
 			(lambda (v0)
 			  (if v0
-			      (eval-cps (car (cdr es)) r xs g k)
-			      (eval-cps (car (cdr (cdr es))) r xs g k)))))
+			      (eval-cps (car (cdr es)) r g k)
+			      (eval-cps (car (cdr (cdr es))) r g k)))))
 	     ((equal? e0 'lambda)
 	      (let ((formals (car es))
 		    (body (car (cdr es))))
 		(k (lambda (vs g k)
-                     (eval-cps body
-                               (extend-env formals vs r)
-                               xs
-                               g
-                               k)))))
+		     (eval-cps body
+			       (extend-env formals vs r)
+			       g
+			       k)))))
 	     ((equal? e0 'let)
 	      (evlet-cps (car es)
 			 (car (cdr es))
 			 r
-			 xs
-                         g
+			 g
 			 k))
 	     ((equal? e0 'cond)
-              (letrec ((loop (lambda (c cs)
+	      (letrec ((loop (lambda (c cs)
 			       (if (null? cs)
 				   (if (equal? (car c) 'else)
-				       (eval-cps (car (cdr c)) r xs g k)
+				       (eval-cps (car (cdr c)) r g k)
 				       (errorf 'eval-cps "cond should end with else"))
 				   (let ((test (car c))
 					 (consequent (car (cdr c))))
-				     (eval-cps test r xs g (lambda (v)
-                                                             (if v
-                                                                 (eval-cps consequent r xs g k)
-                                                                 (loop (car cs) (cdr cs))))))))))
-                (loop (car es) (cdr es))))
+				     (eval-cps test r g (lambda (v)
+							  (if v
+							      (eval-cps consequent r g k)
+							      (loop (car cs) (cdr cs))))))))))
+		(loop (car es) (cdr es))))
 	     ((equal? e0 'letrec)
-	       (eval-cps (macro-expand-letrec es) r xs g k))
+	      (eval-cps (macro-expand-letrec es) r g k))
 	     ((equal? e0 'quote)
 	      (k (car es)))
 	     (else
-	      (evlis-cps es r xs g (lambda (vs)
-                                     ((lookup e0 r g) vs g k)))))
-	    (eval-cps e0 r xs g (lambda (v0)
-                                  (evlis-cps es r xs g (lambda (vs)
-                                                         (v0 vs g k))))))))
+	      (evlis-cps es r g (lambda (vs)
+				  ((lookup e0 r g) vs g k)))))
+	    (eval-cps e0 r g (lambda (v0)
+			       (evlis-cps es r g (lambda (vs)
+						   (v0 vs g k))))))))
      (else
       (errorf 'eval-cps "UFO")))))
 
 (define evlis-cps
-  (lambda (es r xs g k)
+  (lambda (es r g k)
     (cond
      ((null? es)
       (k '()))
      ((pair? es)
-      (eval-cps (car es) r xs g (lambda (v)
-                                  (evlis-cps (cdr es) r xs g (lambda (vs)
+      (eval-cps (car es) r g (lambda (v)
+                                  (evlis-cps (cdr es) r g (lambda (vs)
                                                                (k (cons v vs)))))))
      (else
       (errorf 'evlis-cps "Improper list of actuals")))))
 
 (define evlet-cps-aux
-  (lambda (bs r ys g k)
+  (lambda (bs r g k)
     (cond
      ((null? bs)
       (k '() '()))
@@ -97,20 +92,21 @@
 	    (bsp (cdr bs)))
 	(let ((x (car b))
 	      (d (car (cdr b))))
-	  (eval-cps d r ys g (lambda (v)
-                               (evlet-cps-aux bsp r ys g (lambda (xs vs)
+	  (eval-cps d r g (lambda (v)
+                               (evlet-cps-aux bsp r g (lambda (xs vs)
                                                            (k (cons x xs) (cons v vs)))))))))
      (else
       (errorf 'evlet-cps-aux "Improper let header")))))
 
 (define evlet-cps
-  (lambda (bs e r ys g k)
-    (evlet-cps-aux bs r ys g (lambda (xs vs)
-                               (eval-cps e (extend-env xs vs r) ys g k)))))
+  (lambda (bs e r g k)
+    (evlet-cps-aux bs r g (lambda (xs vs)
+                               (eval-cps e (extend-env xs vs r) g k)))))
 
 (define extend-env
   (lambda (xs vs r)
     (cond
+     ;;; Handling variadic procedures
      ((symbol? xs)
       (cons (cons xs vs) r))
      ((pair? xs)
@@ -119,7 +115,8 @@
       r)
      (else
       (errorf 'extend-env "Illegal formals in extend-env")))))
-	
+
+;;; Lambda procedures with fixed arity or mixed arity are handled here.
 (define extend-env-aux
   (lambda (xs vs r)
     (cond
@@ -136,6 +133,8 @@
       (cons (cons xs vs) r))
      (else
       (errorf 'extend-env-aux "Illegals formals in extend-env-aux")))))
+
+;;; For looking up names, we first start by looking up in the local environment r, before looking up in the global environment g, before finally looking up in the initial environment which contains the defined primitive functions.
 
 (define lookup-init
   (lambda (x r)
@@ -161,6 +160,7 @@
 	    (cdr (car r))
 	    (lookup x (cdr r) g)))))
 
+;;; Macro expanding letrec into a form that contains Curry's variadic YCombinator, which will be used in eval to implement recursion
 (define macro-expand-letrec
   (lambda (es)
     (let ((header (car es))
@@ -264,10 +264,9 @@
                      '()
                      (cons (f (car vs)) (internal-map1 f (cdr vs)))))
               '()
-              '()
               g
               (lambda (internal-map1)
-                (eval-cps e '() '() (cons (cons 'internal-map1 internal-map1) g) (lambda (v) v))))))
+                (eval-cps e '() (cons (cons 'internal-map1 internal-map1) g) (lambda (v) v))))))
 
 ;;; Defining tests for the interpreter
 
@@ -393,16 +392,16 @@
       (unless (equal? (interpret '(apply (lambda (x) x) '(10)) g) 10)
 	      (printf "failed: (interpret '(apply (lambda (x) x) '(10)) ~s)\n" g))
       (unless (equal? (interpret '(apply * '(10 5 -1)) g) -50)
-	      (printf "failed: (interpret: g '(apply * '(10 5 -1)))\n"))
+	      (printf "failed: (interpret '(apply * '(10 5 -1)) ~s)\n" g))
       (unless (equal? (interpret '(apply (lambda () 1) '()) g) 1)
-	      (printf "failed: (interpret: g '(apply (lambda () 1) '()))\n"))
+	      (printf "failed: (interpret '(apply (lambda () 1) '()) ~s)\n" g))
       ;;; Testing for more complex cases of apply
       (unless (equal? (interpret '(apply apply (list + (list 5 3 1))) g) 9)
-	      (printf "failed: (interpret: g '(apply apply (list + (list 5 3 1))))\n"))
+	      (printf "failed: (interpret '(apply apply (list + (list 5 3 1))) ~s)\n" g))
       (unless (equal? (interpret '(apply apply (list (lambda (a b) (+ a (+ b 1))) (list 10 20))) g) 31)
 	      (printf "failed: (interpret '(apply apply (list (lambda (a b) (+ a (+ b 1))) (list 10 20))) ~s)\n" g))
       (unless (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) 10)))) g) 11)
-	      (printf "failed: (interpret (+ 1 (apply call/cc (list (lambda (k) 10)))) ~s)\n" g))
+	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) 10)))) ~s)\n" g))
       (unless (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10))))) g) 11)
 	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10))))) ~s)\n" g))
       (unless (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0))))) g) 11)
@@ -592,16 +591,16 @@
       (when   (equal? (interpret '(apply (lambda (x) x) '(10)) g) 10)
 	      (printf "failed: (interpret '(apply (lambda (x) x) '(10)) ~s)\n" g))
       (when   (equal? (interpret '(apply * '(10 5 -1)) g) -50)
-	      (printf "failed: (interpret: g '(apply * '(10 5 -1)))\n"))
+	      (printf "failed: (interpret '(apply * '(10 5 -1)) ~s)\n" g))
       (when   (equal? (interpret '(apply (lambda () 1) '()) g) 1)
-	      (printf "failed: (interpret: g '(apply (lambda () 1) '()))\n"))
+	      (printf "failed: (interpret '(apply (lambda () 1) '()) ~s)\n" g))
       ;;; Testing for more complex cases of apply
       (when   (equal? (interpret '(apply apply (list + (list 5 3 1))) g) 9)
-	      (printf "failed: (interpret: g '(apply apply (list + (list 5 3 1))))\n"))
+	      (printf "failed: (interpret '(apply apply (list + (list 5 3 1))) ~s)\n" g))
       (when   (equal? (interpret '(apply apply (list (lambda (a b) (+ a (+ b 1))) (list 10 20))) g) 31)
 	      (printf "failed: (interpret '(apply apply (list (lambda (a b) (+ a (+ b 1))) (list 10 20))) ~s)\n" g))
       (when   (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) 10)))) g) 11)
-	      (printf "failed: (interpret (+ 1 (apply call/cc (list (lambda (k) 10)))) ~s)\n" g))
+	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) 10)))) ~s)\n" g))
       (when   (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10))))) g) 11)
 	      (printf "failed: (interpret '(+ 1 (apply call/cc (list (lambda (k) (k 10))))) ~s)\n" g))
       (when   (equal? (interpret '(+ 1 (apply call/cc (list (lambda (k) (/ (k 10) 0))))) g) 11)
@@ -694,11 +693,11 @@
                         (if (is-define? e)
                             (let ((name (car (cdr e)))
                                   (definiens (car (cdr (cdr e)))))
-                              (eval-cps definiens '() '() g (lambda (v)
+                              (eval-cps definiens '() g (lambda (v)
                                                               (loop (car es) (cdr es) (cons (cons name v) g)))))
                             (errorf 'run "not a definition")))
                        ((null? es)
-                        (eval-cps e '() '() g (lambda (v)
+                        (eval-cps e '() g (lambda (v)
                                                 v)))
                        (else
                         (errorf 'run "improper input"))))))

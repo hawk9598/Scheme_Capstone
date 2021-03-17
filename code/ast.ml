@@ -5,9 +5,9 @@ type exp_val =
   |Boolean of bool
   |String of string
   |Character of char
-  |Pair of exp_val * exp_val (* decide to make pairs immutable for now *)
+  |Pair of exp_val * exp_val
   |Closure of (exp_val list -> exp_val)
-  |Primitive of (exp_val list -> exp_val)(* string * (exp_val -> exp_val) *)
+  |Primitive of (exp_val list -> exp_val)
   |Null (* empty list *)
   |Recursive_closure of recur_star
   |Symbol of name
