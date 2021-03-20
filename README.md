@@ -9,15 +9,17 @@ This repository contains all files involved in the creation of a Scheme self-int
 
 3) /utils/: Contains the lexer, parser and instructions to add support for quotations in the interpreter for Scheme written in OCaml.
 
-4) /scheme_code/: Contains the Scheme self-interpreter file.
+4) /scheme_code/: Contains the Scheme self-interpreter, tests for the self-interpreter and a file-parser for .scm files.
 
-## Progress till now:
+## Progress till now (20 March 2021):
 
 1) Implemented an intepreter for Scheme in OCaml written in Direct Style, and completed testing.
 2) Implemented an intepreter for Scheme in OCaml written in Continuation Passing Style, implemented call-cc and apply, and completed testing.
-3) Added support for quotations in both the interpreter written in Direct Style and the interpreter written in Continuation Passing Style, but will have to add testing for this.
-4) Added a lexer and parser (courtesy of my supervisor) to be used with the interpreter for Scheme written in OCaml, and will add tests involving actual Scheme code for the two aforementioned interpreters.
-5) Started on self-interpreter in Scheme, and implemented some of the auxiliary functions required.
+3) Added support for quotations in both the interpreter written in Direct Style and the interpreter written in Continuation Passing Style, and completed testing.
+4) Added a lexer and parser (courtesy of my supervisor) to be used with the interpreter for Scheme written in OCaml, and completed testing of interpreters using actual Scheme code vs their AST representations
+5) Implemented a self-interpreter for Scheme, and utilized Curry's YCombinator (variadic version implemented by Mayer Goldberg) for letrec expressions. Completed testing.
+6) Defined a function that runs on Scheme _programs_, and defined a file-parser that parses .scm files into Scheme programs.
+7) Starting on the implementation of the _tower_ of self-interpreters.
 
 ## Instructions to run the interpreters
 
@@ -29,9 +31,15 @@ as input to the interpreter:
 > (interpret '(+ 1 2))
 3
 ```
+To run the tests for the self-interpreter:
+```
+> (load "file_path/test_self_interpreter.scm")
+;;; Running the following test function should return NO output, meaning that all tests have been passed.
+> (test '())
+```
+
 ### For the Scheme interpreters written in OCaml 
-In the terminal where the directory is set to the Scheme_Capstone repository's path, run the command `dune utop`. Then,
-run the following commands to run the interpreters on Scheme code (input as strings):
+In the terminal where the directory is set to the Scheme_Capstone repository's path, run the command `dune utop`. `dune utop` automatically runs all relevant tests and will raise an error if any of the tests are violated. Then, run the following commands to run the interpreters on Scheme code (input as strings):
 
 For the interpreter written in Direct Style:
 ```
