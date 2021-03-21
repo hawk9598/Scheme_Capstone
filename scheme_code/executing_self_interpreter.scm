@@ -1,4 +1,6 @@
-;;; self_interpreter.scm
+;;; executing_self_interpreter.scm
+
+;;;(load "~/home/Desktop/Yale NUS stuff/Y4S1/Capstone/Scheme_Capstone/scheme_code/file_parser.scm")
 
 (define eval-cps
   (lambda (e r g k)
@@ -158,8 +160,6 @@
 	    (cdr (car r))
 	    (lookup x (cdr r) g)))))
 
-;;; Macro expanding letrec into a form that contains Curry's variadic YCombinator, which will be used in eval to implement recursion
-
 ;;; Defining internal-map1 at the Scheme level
 (define internal-map1
   (lambda (f vs)
@@ -167,6 +167,7 @@
 	'()
 	(cons (f (car vs)) (internal-map1 f (cdr vs))))))
 
+;;; Macro expanding letrec into a form that contains Curry's variadic YCombinator, which will be used in eval to implement recursion
 (define macro-expand-letrec
   (lambda (es)
     (let ((header (car es))
