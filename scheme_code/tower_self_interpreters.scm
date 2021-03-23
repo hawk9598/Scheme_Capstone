@@ -8,13 +8,32 @@
 (define parsed-res
   (file-parser "~/home/Desktop/Yale NUS stuff/Y4S1/Capstone/Scheme_Capstone/scheme_code/self_interpreter.scm"))
 
-;;; intepreter running interpreter running on Scheme
+;;; Evaluating expression using Scheme
+(define run-0-prog
+  (lambda (e)
+    (eval e)))
+
+;;; interpreter running on scheme
 (define run-prog
   (lambda (e)
+    (run (list e))))
+
+;;; intepreter running interpreter running on Scheme
+
+;;; NEWLY CHANGED AND PASSES TESTS
+(define run-2-prog
+  (lambda (e)
     (run (append parsed-res
-		 (list e)))))
+		 (list
+		  `(run (list ',e)))))))
+;; (define run-2-prog
+;;   (lambda (e)
+;;     (run (append parsed-res
+;; 		 (list e)))))
+
 ;;; interpreter running interpreter running interpreter on Scheme
-(define run-2-prog-qq
+
+(define run-3-prog-qq
   (lambda (e)
     (run (append parsed-res
 		 (list `(define run-prog 
@@ -22,9 +41,8 @@
 			    (run (append ',parsed-res
 					 (list e))))))
 		 (list `(run-prog ',e))))))
-;;; last line was (list `(run-prog ,e)) instead, applied the fix there.
 
-(define run-2-prog
+(define run-3-prog
   (lambda (e)
     (run (append parsed-res
 		 (list (list 'define 'run-prog 
@@ -33,34 +51,42 @@
 					 (list 'append (list 'quote parsed-res)
 					       '(list e))))))
 		 (list (list 'run-prog (list 'quote e)))))))
-;;; last line was (list (list 'run-prog e)) instead, applied the fix there.
 
-;; (define run-3-prog
-;;   (lambda (e)
-;;     (run (append parsed-res
-;; 		 (list (list 'define 'run-prog 
-;; 			     (list 'lambda '(e)
-;; 				   (list 'run
-;; 					 (list 'append (list 'quote parsed-res)
-;; 					       (list 'list (list (list 'define 'run-prog 
-;; 								       (list 'lambda '(e)
-;; 									     (list 'run
-;; 										   (list 'append (list 'quote parsed-res)
-;; 											 '(list e))))))
-;; 						     (list (list 'run-prog e))))))))
-;; 		 (list (list 'run-prog e))))))
+;;; An n-ary version of run-prog where user can specifiy number of layers of interpreters
+(define run-star-prog-qq
+  (lambda (n e)
+    (if (<= n 0)
+	(eval e)
+	(letrec ((visit (lambda (n e)
+			  (if (= n 0)
+			      (run (append parsed-res (list e)))
+			      (visit (- n 1) `(run (append ',parsed-res (list ',e))))))))
+	  (if (= n 1)
+	      (run (list e))
+	      (visit (- n 2) e))))))
 
-;; (define run-star-prog
-;;   (lambda (n e)
-;;     (letrec ((visit (lambda (n e)
-;; 		      (if (= n 0)
-;; 			  e
-;; 			  (run (append parsed-res
-;; 				       (list `(define run-prog
-;; 						(lambda (e)
-						  
-;; 				       (list `(run-prog ,e))))))))
-		    
-;;       (if (<= n 0)
-;; 	  (eval e)
-;; 	  (visit (- n 1) e)))))
+;;; Returns the quoted program that will be run if it was run-star-prog-qq
+(define run-star-prog-qqq
+  (lambda (n e)
+    (if (<= n 0)
+	(eval e)
+	(letrec ((visit (lambda (n e)
+			  (if (= n 0)
+			      `(run (append ',parsed-res (list ',e)))
+			      (visit (- n 1) `(run (append ',parsed-res (list ',e))))))))
+	  (if (= n 1)
+	      (run (list e))
+	      (visit (- n 2) e))))))
+
+;;; Use to visualize the nested running of the interpreters for n >= 2. Quote magritte on parsed-res
+(define run-star-prog-qqqq
+  (lambda (n e)
+    (if (<= n 0)
+	(eval e)
+	(letrec ((visit (lambda (n e)
+			  (if (= n 0)
+			      `(run (append 'parsed-res (list ',e)))
+			      (visit (- n 1) `(run (append 'parsed-res (list ',e))))))))
+	  (if (= n 1)
+	      (run (list e))
+	      (visit (- n 2) e))))))
