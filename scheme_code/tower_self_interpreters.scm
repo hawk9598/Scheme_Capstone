@@ -19,38 +19,21 @@
     (run (list e))))
 
 ;;; intepreter running interpreter running on Scheme
-
-;;; NEWLY CHANGED AND PASSES TESTS
 (define run-2-prog
   (lambda (e)
     (run (append parsed-res
 		 (list
 		  `(run (list ',e)))))))
-;; (define run-2-prog
-;;   (lambda (e)
-;;     (run (append parsed-res
-;; 		 (list e)))))
+
 
 ;;; interpreter running interpreter running interpreter on Scheme
-
-(define run-3-prog-qq
-  (lambda (e)
-    (run (append parsed-res
-		 (list `(define run-prog 
-			  (lambda (e)
-			    (run (append ',parsed-res
-					 (list e))))))
-		 (list `(run-prog ',e))))))
-
 (define run-3-prog
   (lambda (e)
     (run (append parsed-res
-		 (list (list 'define 'run-prog 
-			     (list 'lambda '(e)
-				   (list 'run
-					 (list 'append (list 'quote parsed-res)
-					       '(list e))))))
-		 (list (list 'run-prog (list 'quote e)))))))
+		 (list
+		  `(run (append ',parsed-res
+				(list
+				 ',`(run (list ',e))))))))))
 
 ;;; An n-ary version of run-prog where user can specifiy number of layers of interpreters
 (define run-star-prog-qq
@@ -63,7 +46,7 @@
 			      (visit (- n 1) `(run (append ',parsed-res (list ',e))))))))
 	  (if (= n 1)
 	      (run (list e))
-	      (visit (- n 2) e))))))
+	      (visit (- n 2) `(run (list ',e))))))))
 
 ;;; Returns the quoted program that will be run if it was run-star-prog-qq
 (define run-star-prog-qqq
@@ -76,7 +59,7 @@
 			      (visit (- n 1) `(run (append ',parsed-res (list ',e))))))))
 	  (if (= n 1)
 	      (run (list e))
-	      (visit (- n 2) e))))))
+	      (visit (- n 2) `(run (list ',e))))))))
 
 ;;; Use to visualize the nested running of the interpreters for n >= 2. Quote magritte on parsed-res
 (define run-star-prog-qqqq
@@ -89,4 +72,4 @@
 			      (visit (- n 1) `(run (append 'parsed-res (list ',e))))))))
 	  (if (= n 1)
 	      (run (list e))
-	      (visit (- n 2) e))))))
+	      (visit (- n 2) `(run (list ',e))))))))
