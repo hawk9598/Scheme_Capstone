@@ -8,11 +8,6 @@
 (define parsed-res
   (file-parser "~/home/Desktop/Yale NUS stuff/Y4S1/Capstone/Scheme_Capstone/scheme_code/self_interpreter.scm"))
 
-;;; Evaluating expression using Scheme
-(define run-0-prog
-  (lambda (e)
-    (eval e)))
-
 ;;; interpreter running on scheme
 (define run-prog
   (lambda (e)
@@ -36,10 +31,10 @@
 				 ',`(run (list ',e))))))))))
 
 ;;; An n-ary version of run-prog where user can specifiy number of layers of interpreters
-(define run-star-prog-qq
+(define run-star-prog
   (lambda (n e)
     (if (<= n 0)
-	(eval e)
+	(errorf 'run-star-prog "n must be greater than 0")
 	(letrec ((visit (lambda (n e)
 			  (if (= n 0)
 			      (run (append parsed-res (list e)))
@@ -52,7 +47,7 @@
 (define run-star-prog-qqq
   (lambda (n e)
     (if (<= n 0)
-	(eval e)
+	(errorf 'run-star-prog "n must be greater than 0")
 	(letrec ((visit (lambda (n e)
 			  (if (= n 0)
 			      `(run (append ',parsed-res (list ',e)))
@@ -65,7 +60,7 @@
 (define run-star-prog-qqqq
   (lambda (n e)
     (if (<= n 0)
-	(eval e)
+	(errorf 'run-star-prog "n must be greater than 0")
 	(letrec ((visit (lambda (n e)
 			  (if (= n 0)
 			      `(run (append 'parsed-res (list ',e)))

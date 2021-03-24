@@ -24,11 +24,11 @@
 	      (printf "failed: (interpret '() ~s)\n" g))
       ;;; Testing for if expressions
       (unless (equal? (interpret '(if #t 1 2) g) 1)
-	      (printf "failed: (interpret (if #t 1 2) ~s)\n" g))
+	      (printf "failed: (interpret '(if #t 1 2) ~s)\n" g))
       (unless (equal? (interpret '(if #f 1 2) g) 2)
-	      (printf "failed: (interpret (if #f 1 2) ~s)\n" g))
+	      (printf "failed: (interpret '(if #f 1 2) ~s)\n" g))
       (unless (equal? (interpret '(if 0 1 2) g) 1)
-	      (printf "failed: (interpret (if 0 1 2) ~s)\n" g))
+	      (printf "failed: (interpret '(if 0 1 2) ~s)\n" g))
       (unless (equal? (interpret '((lambda (x) x) 1) g) 1)
 	      (printf "failed: (interpret '((lambda (x) x) 1) ~s)\n" g))
       ;;; Testing for lambda expressions
@@ -53,7 +53,7 @@
 	      (printf "failed: (interpret '(let ((x 1) (y 2)) y) ~s)\n" g))
       ;;; Testing for quote expressions and nested quote expressions
       (unless (equal? (interpret ''(if #t 1 2) g) '(if #t 1 2))
-	      (printf "failed: (interpret '('(if #t 1 2)) ~s)\n" g))
+	      (printf "failed: (interpret ''(if #t 1 2) ~s)\n" g))
       (unless (equal? (interpret ''((lambda (x y) x) 1 2) g)'((lambda (x y) x) 1 2))
 	      (printf "failed: (interpret ''((lambda (x y) x) 1 2) ~s)\n" g))
       (unless (equal? (interpret '''(if #t 1 2) g) ''(if #t 1 2))
@@ -224,11 +224,11 @@
 	      (printf "succeeded: (interpret '() ~s)\n" g))
       ;;; Testing for if expressions
       (when   (equal? (interpret '(if #t 1 2) g) 1)
-	      (printf "succeeded: (interpret (if #t 1 2) ~s)\n" g))
+	      (printf "succeeded: (interpret '(if #t 1 2) ~s)\n" g))
       (when   (equal? (interpret '(if #f 1 2) g) 2)
-	      (printf "succeeded: (interpret (if #f 1 2) ~s)\n" g))
+	      (printf "succeeded: (interpret '(if #f 1 2) ~s)\n" g))
       (when   (equal? (interpret '(if 0 1 2) g) 1)
-	      (printf "succeeded: (interpret (if 0 1 2) ~s)\n" g))
+	      (printf "succeeded: (interpret '(if 0 1 2) ~s)\n" g))
       (when   (equal? (interpret '((lambda (x) x) 1) g) 1)
 	      (printf "succeeded: (interpret '((lambda (x) x) 1) ~s)\n" g))
       ;;; Testing for lambda expressions
@@ -253,7 +253,7 @@
 	      (printf "succeeded: (interpret '(let ((x 1) (y 2)) y) ~s)\n" g))
       ;;; Testing for quote expressions and nested quote expressions
       (when   (equal? (interpret ''(if #t 1 2) g) '(if #t 1 2))
-	      (printf "succeeded: (interpret '('(if #t 1 2)) ~s)\n" g))
+	      (printf "succeeded: (interpret ''(if #t 1 2) ~s)\n" g))
       (when   (equal? (interpret ''((lambda (x y) x) 1 2) g)'((lambda (x y) x) 1 2))
 	      (printf "succeeded: (interpret ''((lambda (x y) x) 1 2) ~s)\n" g))
       (when   (equal? (interpret '''(if #t 1 2) g) ''(if #t 1 2))
