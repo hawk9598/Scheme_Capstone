@@ -9,18 +9,7 @@ This repository contains all files involved in the creation of a Scheme self-int
 
 3) /utils/: Contains the lexer, parser and instructions to add support for quotations in the interpreter for Scheme written in OCaml.
 
-4) /scheme_code/: Contains the Scheme self-interpreter, tests for the self-interpreter and a file-parser for .scm files.
-
-## Progress till now (24 March 2021):
-
-1) Implemented an intepreter for Scheme in OCaml written in Direct Style, and completed testing.
-2) Implemented an intepreter for Scheme in OCaml written in Continuation Passing Style, implemented call-cc and apply, and completed testing.
-3) Added support for quotations in both the interpreter written in Direct Style and the interpreter written in Continuation Passing Style, and completed testing.
-4) Added a lexer and parser (courtesy of my supervisor) to be used with the interpreter for Scheme written in OCaml, and completed testing of interpreters using actual Scheme code vs their AST representations
-5) Implemented a self-interpreter for Scheme, and utilized Curry's YCombinator (variadic version implemented by Mayer Goldberg) for letrec expressions. Completed testing.
-6) Defined a function that runs on Scheme _programs_, and defined a file-parser that parses .scm files into Scheme programs.
-7) Finished implementation of _tower_ of self-interpreters, and tested up till a tower containing 3 self-interpreters running on top of each other on top of Scheme. 
-8) To begin on adding a version of a self-interpreter where the primitives perform type-checking.
+4) /scheme_code/: Contains the Scheme self-interpreter, tests for the self-interpreter, code for a tower of self-interpreters and a file-parser for .scm files. A type-checked version for the self-interpreter and the tower of self-interpreters is also included inside.
 
 ## Instructions to run the interpreters
 
