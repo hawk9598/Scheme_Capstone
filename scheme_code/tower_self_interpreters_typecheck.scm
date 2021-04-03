@@ -16,7 +16,7 @@
 ;;; intepreter running interpreter running on Scheme
 (define run-2-prog-typecheck
   (lambda (e)
-    (run (append parsed-res
+    (run (append parsed-res-typecheck
 		 (list
 		  `(run (list ',e)))))))
 
@@ -24,9 +24,9 @@
 ;;; interpreter running interpreter running interpreter on Scheme
 (define run-3-prog-typecheck
   (lambda (e)
-    (run (append parsed-res
+    (run (append parsed-res-typecheck
 		 (list
-		  `(run (append ',parsed-res
+		  `(run (append ',parsed-res-typecheck
 				(list
 				 ',`(run (list ',e))))))))))
 
@@ -37,8 +37,8 @@
 	(errorf 'run-star-prog "n must be greater than 0")
 	(letrec ((visit (lambda (n e)
 			  (if (= n 0)
-			      (run (append parsed-res (list e)))
-			      (visit (- n 1) `(run (append ',parsed-res (list ',e))))))))
+			      (run (append parsed-res-typecheck (list e)))
+			      (visit (- n 1) `(run (append ',parsed-res-typecheck (list ',e))))))))
 	  (if (= n 1)
 	      (run (list e))
 	      (visit (- n 2) `(run (list ',e))))))))
@@ -50,8 +50,8 @@
 	(errorf 'run-star-prog "n must be greater than 0")
 	(letrec ((visit (lambda (n e)
 			  (if (= n 0)
-			      `(run (append ',parsed-res (list ',e)))
-			      (visit (- n 1) `(run (append ',parsed-res (list ',e))))))))
+			      `(run (append ',parsed-res-typecheck (list ',e)))
+			      (visit (- n 1) `(run (append ',parsed-res-typecheck (list ',e))))))))
 	  (if (= n 1)
 	      (run (list e))
 	      (visit (- n 2) `(run (list ',e))))))))
@@ -63,8 +63,8 @@
 	(errorf 'run-star-prog "n must be greater than 0")
 	(letrec ((visit (lambda (n e)
 			  (if (= n 0)
-			      `(run (append 'parsed-res (list ',e)))
-			      (visit (- n 1) `(run (append 'parsed-res (list ',e))))))))
+			      `(run (append 'parsed-res-typecheck (list ',e)))
+			      (visit (- n 1) `(run (append 'parsed-res-typecheck (list ',e))))))))
 	  (if (= n 1)
 	      (run (list e))
 	      (visit (- n 2) `(run (list ',e))))))))
