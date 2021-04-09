@@ -24,8 +24,8 @@ as input to the tower:
 ;;; Running using the time function in Scheme
 
 ;;; Checking time taken to run a tower of self-interpreters of size 4 on factorial 5
-> (time (run-star-prog-qq 4 '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 5))))
-(time (run-star-prog-qq 4 ...))
+> (time (run-star-prog 4 '(letrec ((fac (lambda (n) (if (= n 0) 1 (* n (fac (- n 1))))))) (fac 5))))
+(time (run-star-prog 4 ...))
     24231 collections
     1051.968750000s elapsed cpu time, including 3.046875000s collecting
     1056.520110100s elapsed real time, including 3.300919100s collecting
